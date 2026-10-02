@@ -1,0 +1,6 @@
+{
+  "name": "TempInbox - Temporary Email Service",
+  "description": "Fast, privacy-focused disposable temporary email generator with real-time inbox, multi-domain options, custom addresses, SEO blog, API docs, and admin analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
