@@ -40,6 +40,137 @@
           } catch (err) {}
         }
       })();
+
+      // Suppress and gracefully handle Vite HMR WebSocket connection failure in AI Studio cloud iframe environment
+      (function() {
+        // 1. Suppress unhandled rejections from WebSocket or Vite client
+        window.addEventListener('unhandledrejection', function(event) {
+          var reason = event && event.reason;
+          var msg = (reason && (reason.message || reason.stack || String(reason))) || '';
+          if (
+            msg.indexOf('WebSocket') !== -1 ||
+            msg.indexOf('websocket') !== -1 ||
+            msg.indexOf('failed to connect to websocket') !== -1 ||
+            msg.indexOf('WebSocket closed without opened') !== -1
+          ) {
+            event.preventDefault();
+            if (typeof event.stopImmediatePropagation === 'function') {
+              event.stopImmediatePropagation();
+            }
+            return false;
+          }
+        }, true);
+
+        // 2. Suppress error events from WebSocket or Vite client
+        window.addEventListener('error', function(event) {
+          var msg = (event && (event.message || (event.error && event.error.message))) || '';
+          if (
+            typeof msg === 'string' && (
+              msg.indexOf('WebSocket') !== -1 ||
+              msg.indexOf('websocket') !== -1 ||
+              msg.indexOf('failed to connect to websocket') !== -1 ||
+              msg.indexOf('WebSocket closed without opened') !== -1
+            )
+          ) {
+            event.preventDefault();
+            if (typeof event.stopImmediatePropagation === 'function') {
+              event.stopImmediatePropagation();
+            }
+            return false;
+          }
+        }, true);
+
+        // 3. Filter console.error from triggering UI overlay for expected HMR failure
+        var _origConsoleError = console.error;
+        console.error = function() {
+          var firstArg = arguments[0];
+          var msg = typeof firstArg === 'string' ? firstArg : (firstArg && firstArg.message) || '';
+          if (
+            typeof msg === 'string' && (
+              msg.indexOf('[vite] failed to connect to websocket') !== -1 ||
+              msg.indexOf('WebSocket closed without opened') !== -1
+            )
+          ) {
+            return;
+          }
+          return _origConsoleError.apply(console, arguments);
+        };
+
+        // 4. Provide a stubbed WebSocket for Vite's HMR client so it connects cleanly without errors
+        try {
+          var NativeWebSocket = window.WebSocket;
+          if (NativeWebSocket) {
+            var ViteSafeWebSocket = function(url, protocols) {
+              var isViteHmr = false;
+              if (protocols === 'vite-hmr' || protocols === 'vite-ping') {
+                isViteHmr = true;
+              } else if (Array.isArray(protocols) && (protocols.indexOf('vite-hmr') !== -1 || protocols.indexOf('vite-ping') !== -1)) {
+                isViteHmr = true;
+              } else if (typeof url === 'string' && (url.indexOf('token=') !== -1 || url.indexOf('vite-hmr') !== -1)) {
+                isViteHmr = true;
+              }
+
+              if (isViteHmr) {
+                var dummyWs = {
+                  url: url,
+                  protocol: Array.isArray(protocols) ? protocols[0] : (protocols || ''),
+                  readyState: 1, // OPEN
+                  OPEN: 1,
+                  CLOSED: 3,
+                  CLOSING: 2,
+                  CONNECTING: 0,
+                  bufferedAmount: 0,
+                  extensions: '',
+                  binaryType: 'blob',
+                  onopen: null,
+                  onclose: null,
+                  onerror: null,
+                  onmessage: null,
+                  _listeners: {},
+                  addEventListener: function(event, callback) {
+                    if (!this._listeners[event]) this._listeners[event] = [];
+                    this._listeners[event].push(callback);
+                    if (event === 'open') {
+                      setTimeout(function() {
+                        var evt = { type: 'open', target: dummyWs };
+                        if (typeof dummyWs.onopen === 'function') dummyWs.onopen(evt);
+                        callback(evt);
+                      }, 0);
+                    }
+                  },
+                  removeEventListener: function(event, callback) {
+                    if (this._listeners[event]) {
+                      this._listeners[event] = this._listeners[event].filter(function(cb) {
+                        return cb !== callback;
+                      });
+                    }
+                  },
+                  dispatchEvent: function() { return true; },
+                  send: function() {},
+                  close: function() {
+                    this.readyState = 3;
+                    var evt = { type: 'close', wasClean: true, code: 1000, reason: 'Normal Closure', target: dummyWs };
+                    if (typeof this.onclose === 'function') this.onclose(evt);
+                    if (this._listeners['close']) {
+                      this._listeners['close'].forEach(function(cb) { cb(evt); });
+                    }
+                  }
+                };
+                return dummyWs;
+              }
+
+              return new NativeWebSocket(url, protocols);
+            };
+
+            ViteSafeWebSocket.prototype = NativeWebSocket.prototype;
+            ViteSafeWebSocket.CONNECTING = 0;
+            ViteSafeWebSocket.OPEN = 1;
+            ViteSafeWebSocket.CLOSING = 2;
+            ViteSafeWebSocket.CLOSED = 3;
+            window.WebSocket = ViteSafeWebSocket;
+          }
+        } catch (wsErr) {}
+      })();
     </script>
   </head>
   <body>
