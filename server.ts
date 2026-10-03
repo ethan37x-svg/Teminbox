@@ -12,7 +12,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+const PORT = process.env.NODE_ENV === 'production' && process.env.PORT
+  ? parseInt(process.env.PORT, 10)
+  : 3000;
 
 app.use(express.json());
 
