@@ -15,10 +15,10 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenCmp }) => {
     <footer className="px-6 sm:px-8 py-6 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between text-xs font-medium text-slate-500 dark:text-slate-400 shrink-0 gap-4">
       <div className="space-y-1 text-center md:text-left">
         <div className="flex items-center justify-center md:justify-start gap-2">
-          <span>© {new Date().getFullYear()} TempInbox Research Laboratory.</span>
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
+          <span>© {new Date().getFullYear()} TempInbox.solutions.</span>
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 flex items-center gap-1">
             <ShieldCheck className="w-3 h-3" />
-            IAB TCF v2.2 Certified
+            Privacy & Consent Compliant
           </span>
         </div>
         <p className="text-[11px] text-slate-400 dark:text-slate-500">

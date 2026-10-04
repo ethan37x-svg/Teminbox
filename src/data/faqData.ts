@@ -56,6 +56,21 @@ export const faqList: FAQItem[] = [
     answer: 'TempInbox is 100% free to all global users. We fund our high-availability edge server infrastructure and domain renewals through contextual display advertising managed via Google AdSense. We adhere rigorously to Google Publisher Policies: all ad units are distinctly labeled as "ADVERTISEMENT", placed outside interactive workflow zones to prevent accidental clicks, and we strictly prohibit deceptive content, thin value, or intrusive ad placements.',
   },
   {
+    category: 'Protocols & Architecture',
+    question: 'What is the relationship between tempinbox.solutions and tempinbox.org?',
+    answer: 'TempInbox.solutions (https://tempinbox.solutions) is the primary web portal, user application, and educational resource hub where users manage their temporary inboxes. Domain names such as tempinbox.org, mailhub.cc, quickmail.live, and flashmail.email serve as dedicated mail exchange (MX) endpoints configured on mail transfer agents to receive and parse incoming SMTP messages for active inboxes.',
+  },
+  {
+    category: 'Privacy & Identity',
+    question: 'What data is collected, and are IP addresses logged?',
+    answer: 'No personal identification, names, physical addresses, or phone numbers are ever collected. Using TempInbox requires zero registration. Standard web server access logs may briefly record IP addresses solely for operational security, rate limiting, and DDoS mitigation; these logs are transient and are never linked to personal profiles or commercial advertising databases.',
+  },
+  {
+    category: 'Privacy & Identity',
+    question: 'Are temporary mailboxes publicly accessible, and can I delete my inbox immediately?',
+    answer: 'Yes, temporary email addresses operate on shared domain namespaces without passwords. Anyone who enters or knows the exact address can view messages delivered to it while active. For this reason, users must never use disposable addresses for sensitive personal, medical, or financial accounts. You can click the "Delete Mailbox" button at any time to immediately discard the active address and permanently purge all associated messages from memory.',
+  },
+  {
     category: 'Legal & AdSense',
     question: 'Does TempInbox scan, sell, or monetize user email content for advertising?',
     answer: 'Absolutely not. TempInbox maintains zero commercial telemetry. We never sell, rent, or distribute received email contents, metadata, or IP logs to advertisers, data aggregators, or third-party marketing brokers. Display advertisements served by Google AdSense operate independently of ephemeral email contents.',
@@ -83,6 +98,6 @@ export const faqList: FAQItem[] = [
   {
     category: 'Usage Boundaries',
     question: 'How can copyright holders or domain administrators report abuse or malicious activity?',
-    answer: 'We maintain zero tolerance for unlawful exploitation. If you observe abuse, automated abuse scripts, or trademark infringement, you can contact our dedicated security team directly at abuse@tempinbox.org or support@tempinbox.org. We implement rapid domain blocking, IP rate-limiting, and cooperate with law enforcement in accordance with applicable legal frameworks.',
+    answer: 'We maintain zero tolerance for unlawful exploitation. If you observe abuse, automated abuse scripts, or trademark infringement, you can contact our security desk directly at abuse@tempinbox.solutions or support@tempinbox.solutions. We implement rapid domain blocking, IP rate-limiting, and cooperate with law enforcement in accordance with applicable legal frameworks.',
   },
 ];

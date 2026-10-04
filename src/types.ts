@@ -38,6 +38,7 @@ export interface EmailMessage {
   spamCategory: string;
   replyTo?: string;
   verificationCode?: string; // Extracted OTP code if detected
+  isTestMessage?: boolean; // Flag distinguishing demo/test simulation from real incoming emails
 }
 
 export interface DomainOption {

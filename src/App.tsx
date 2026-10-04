@@ -17,6 +17,7 @@ import { DisclaimerSection } from './components/DisclaimerSection';
 import { CookieSettingsSection } from './components/CookieSettingsSection';
 import { EmailExposureRiskCalculator } from './components/EmailExposureRiskCalculator';
 import { EmailArchitectureExplainer } from './components/EmailArchitectureExplainer';
+import { ServiceIntroEducational } from './components/ServiceIntroEducational';
 import { TcfConsentManagementModal } from './components/TcfConsentManagementModal';
 import { Footer } from './components/Footer';
 import { Cookie } from 'lucide-react';
@@ -43,6 +44,42 @@ export default function App() {
       document.documentElement.classList.remove('dark');
     }
   }, [darkMode]);
+
+  // Sync SEO Title and Meta Description per Active Tab
+  useEffect(() => {
+    const titles: Record<string, string> = {
+      inbox: 'TempInbox.solutions — Free Disposable Temporary Email & Privacy Inbox',
+      audit: 'Email Privacy & Exposure Estimation Tool — TempInbox.solutions',
+      blog: 'Privacy & Cyber Hygiene Knowledge Base — TempInbox.solutions',
+      api: 'Developer API & Automation Docs — TempInbox.solutions',
+      faq: 'Frequently Asked Questions — TempInbox.solutions',
+      admin: 'System Health & Metrics — TempInbox.solutions',
+      terms: 'Terms of Service & Usage Policy — TempInbox.solutions',
+      about: 'About TempInbox.solutions — Mission & Infrastructure',
+      disclaimer: 'Service Disclaimer & Limitations — TempInbox.solutions',
+      cookies: 'Cookie Settings & Consent Preferences — TempInbox.solutions',
+    };
+
+    const descriptions: Record<string, string> = {
+      inbox: 'Free, instant disposable temporary email addresses. Block spam, prevent tracking, and protect personal identity without registration.',
+      audit: 'Educational estimation tool evaluating digital identity surface area and email exposure factors based on general privacy practices.',
+      blog: 'In-depth technical guides, cybersecurity best practices, and protocol standards for disposable email and email authentication.',
+      api: 'Programmatic REST endpoints for generating temporary inboxes and retrieving verification messages in CI/CD automation pipelines.',
+      faq: 'Answers to frequently asked questions regarding temporary email lifespan, privacy protection, and inbound SMTP routing.',
+      admin: 'Real-time telemetry and operational metrics for TempInbox.solutions edge mail servers.',
+      terms: 'Terms of Service, acceptable usage guidelines, and service scope for TempInbox.solutions.',
+      about: 'Learn about TempInbox.solutions, our inbound-only mail architecture, and our commitment to user privacy.',
+      disclaimer: 'Important service limitations: TempInbox is an ephemeral service not intended for permanent account recovery or financial institutions.',
+      cookies: 'Manage your consent preferences for cookies and advertising personalization in accordance with GDPR and ePrivacy regulations.',
+    };
+
+    document.title = titles[activeTab] || 'TempInbox.solutions — Free Disposable Temporary Email';
+    
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute('content', descriptions[activeTab] || descriptions.inbox);
+    }
+  }, [activeTab]);
 
   // Initial Mailbox Generation on Load
   useEffect(() => {
@@ -233,6 +270,9 @@ export default function App() {
               isLoading={isLoading}
             />
 
+            {/* Educational Service Overview: How it Works, Scope & Limitations */}
+            <ServiceIntroEducational />
+
             {/* Non-intrusive AdSense Banner below Hero */}
             <AdSenseBanner placement="hero-bottom" />
 
@@ -243,6 +283,7 @@ export default function App() {
               onSelectMessage={setSelectedMessage}
               onOpenTestEmailModal={() => setShowTestEmailModal(true)}
               isLoading={isLoading}
+              mailbox={mailbox}
             />
 
             {/* Deep Value Section: Interactive Privacy Diagnostic Calculator & Architecture Explainer */}

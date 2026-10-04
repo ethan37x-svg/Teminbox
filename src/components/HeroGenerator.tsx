@@ -100,15 +100,15 @@ export const HeroGenerator: React.FC<HeroGeneratorProps> = ({
         </p>
         
         {/* Main Generator Input Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center w-full max-w-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-2 focus-within:ring-2 focus-within:ring-blue-100 dark:focus-within:ring-blue-900/40 transition-all gap-2 mb-6">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center w-full max-w-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-2 focus-within:ring-2 focus-within:ring-blue-100 dark:focus-within:ring-blue-900/40 transition-all gap-2 mb-6 overflow-hidden">
           <input
             type="text"
             readOnly
             value={mailbox ? mailbox.address : 'Generating...'}
-            className="bg-transparent border-none flex-grow px-4 py-2 font-mono text-base sm:text-lg text-slate-800 dark:text-slate-100 focus:outline-none select-all font-semibold"
+            className="bg-transparent border-none flex-grow min-w-0 truncate px-4 py-2 font-mono text-base sm:text-lg text-slate-800 dark:text-slate-100 focus:outline-none select-all font-semibold text-center sm:text-left"
           />
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-wrap sm:flex-nowrap items-center justify-center gap-2 shrink-0">
             {/* Copy Primary Button */}
             <button
               onClick={handleCopy}

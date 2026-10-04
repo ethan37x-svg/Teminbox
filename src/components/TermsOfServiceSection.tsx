@@ -12,7 +12,7 @@ export const TermsOfServiceSection: React.FC<{ initialTab?: 'terms' | 'privacy' 
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   const handleCopyText = () => {
-    const textToCopy = `TempInbox - Terms of Service & Google AdSense Policy Compliance\nLast Updated: August 3, 2026\nURL: https://tempinbox.org\n\n1. Acceptance of Terms\nBy accessing TempInbox, you agree to these Terms of Service...`;
+    const textToCopy = `TempInbox.solutions - Terms of Service & Google AdSense Policy Compliance\nLast Updated: October 4, 2026\nURL: https://tempinbox.solutions\n\n1. Acceptance of Terms\nBy accessing TempInbox.solutions, you agree to these Terms of Service...`;
     navigator.clipboard.writeText(textToCopy);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -208,7 +208,7 @@ export const TermsOfServiceSection: React.FC<{ initialTab?: 'terms' | 'privacy' 
                 </div>
                 <div className="space-y-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                   <p>
-                    Welcome to <strong>TempInbox</strong> (accessible at <span className="font-semibold text-slate-900 dark:text-white">https://tempinbox.org</span> or via our web interfaces and API endpoints). By accessing, browsing, generating a temporary mailbox, or using any service provided by TempInbox, you express your full, unreserved acceptance of these Terms of Service.
+                    Welcome to <strong>TempInbox.solutions</strong> (accessible at <span className="font-semibold text-slate-900 dark:text-white">https://tempinbox.solutions</span>, with mail routing domains including <span className="font-mono text-xs">tempinbox.org</span>, <span className="font-mono text-xs">mailhub.cc</span>, and companion MX endpoints). By accessing, browsing, generating a temporary mailbox, or using any service provided by TempInbox.solutions, you express your full, unreserved acceptance of these Terms of Service.
                   </p>
                   <p>
                     If you do not agree with any part of these terms, you are explicitly prohibited from accessing or using the platform.
@@ -506,7 +506,7 @@ export const TermsOfServiceSection: React.FC<{ initialTab?: 'terms' | 'privacy' 
                       <span>Official Compliance & Abuse Desk:</span>
                     </div>
                     <p className="text-xs text-slate-600 dark:text-slate-300">
-                      Email: <a href="mailto:support@tempinbox.org" className="font-bold text-blue-600 dark:text-blue-400 underline">support@tempinbox.org</a>
+                      Email: <a href="mailto:support@tempinbox.solutions" className="font-bold text-blue-600 dark:text-blue-400 underline">support@tempinbox.solutions</a>
                     </p>
                     <p className="text-[11px] text-slate-500">
                       Response SLA: We review legal DMCA requests and abuse reports within 24 to 48 business hours.
@@ -779,7 +779,7 @@ export const TermsOfServiceSection: React.FC<{ initialTab?: 'terms' | 'privacy' 
                   For questions regarding our Privacy Policy, Google AdSense compliance disclosures, or data security practices, please contact our Data Protection Officer:
                 </p>
                 <p className="text-xs font-bold text-blue-600 dark:text-blue-400">
-                  Email: <a href="mailto:privacy@tempinbox.org" className="underline">privacy@tempinbox.org</a> or <a href="mailto:support@tempinbox.org" className="underline">support@tempinbox.org</a>
+                  Email: <a href="mailto:privacy@tempinbox.solutions" className="underline">privacy@tempinbox.solutions</a> or <a href="mailto:support@tempinbox.solutions" className="underline">support@tempinbox.solutions</a>
                 </p>
               </div>
 

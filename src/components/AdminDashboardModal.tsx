@@ -4,12 +4,12 @@ import { SystemStats } from '../types';
 
 export const AdminDashboardModal: React.FC = () => {
   const [stats, setStats] = useState<SystemStats>({
-    activeInboxes: 1840,
-    totalEmailsReceived: 184200,
-    spamBlockedPercent: 17.4,
+    activeInboxes: 0,
+    totalEmailsReceived: 0,
+    spamBlockedPercent: 0,
     avgDeliveryTimeMs: 380,
-    storageUsedMb: 142.8,
-    serverUptimeHours: 1420,
+    storageUsedMb: 0.1,
+    serverUptimeHours: 0,
   });
 
   const [logs, setLogs] = useState<Array<{ id: string; text: string; time: string; type: 'info' | 'success' | 'warn' }>>([

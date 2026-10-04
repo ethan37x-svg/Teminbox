@@ -56,15 +56,17 @@ interface StoredMessage {
   spamCategory: string;
   replyTo?: string;
   verificationCode?: string;
+  isTestMessage?: boolean;
 }
 
 const mailboxes = new Map<string, StoredMailbox>();
 const messages = new Map<string, StoredMessage[]>();
 
-// Global counters for admin stats
-let totalInboxesCreated = 42890;
-let totalEmailsReceived = 184200;
-let totalSpamBlocked = 32150;
+// Honest runtime counters (no fabricated baseline statistics)
+const serverStartTime = Date.now();
+let sessionInboxesCreated = 0;
+let sessionEmailsReceived = 0;
+let sessionSpamBlocked = 0;
 
 // Lazy initialize Gemini client
 function getGenAIClient(): GoogleGenAI | null {
@@ -117,52 +119,45 @@ function calculateSpamScore(subject: string, bodyText: string): { score: number;
   return { score, status, category };
 }
 
-// Seed default sample emails for demo addresses if queried
-function seedInitialMessagesIfNeeded(address: string) {
-  if (!messages.has(address)) {
-    messages.set(address, [
-      {
-        id: 'msg-welcome-001',
-        mailboxAddress: address,
-        senderName: 'TempInbox Security Team',
-        senderEmail: 'welcome@tempinbox.org',
-        subject: '🔒 Welcome to TempInbox - Your Disposable Mailbox is Ready!',
-        snippet: 'Your temporary mailbox has been created successfully. All messages received will be displayed in real time.',
-        bodyHtml: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-            <h2 style="color: #2563eb; margin-top: 0;">Welcome to TempInbox!</h2>
-            <p style="font-size: 15px; color: #334155; line-height: 1.6;">Your temporary email address <strong>${address}</strong> is active and connected to our live inbound edge router.</p>
-            <div style="background-color: #f1f5f9; padding: 15px; border-left: 4px solid #2563eb; margin: 20px 0; border-radius: 4px;">
-              <p style="margin: 0; font-size: 14px; color: #475569;"><strong>Pro Tip:</strong> Need to test incoming emails? Use the <strong>"Send Test Email"</strong> button above to simulate incoming messages like Netflix OTPs, Discord activations, or shopping coupons instantly!</p>
-            </div>
-            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-            <p style="font-size: 12px; color: #94a3b8; text-align: center;">TempInbox Privacy Protection Service • No Registration Required</p>
-          </div>
-        `,
-        bodyText: `Welcome to TempInbox!\nYour temporary email address ${address} is active.\nUse the "Send Test Email" button to test incoming messages instantly.`,
-        receivedAt: Date.now() - 30000,
-        sizeKb: 12.4,
-        unread: true,
-        attachments: [],
-        headers: {
-          'Received': 'from mail.tempinbox.org (mail.tempinbox.org [192.0.2.1]) by edge.tempinbox.org with ESMTP id t821k',
-          'From': 'TempInbox Security <welcome@tempinbox.org>',
-          'To': address,
-          'Subject': '🔒 Welcome to TempInbox - Your Disposable Mailbox is Ready!',
-          'Date': new Date().toUTCString(),
-          'Message-ID': `<welcome-${Date.now()}@tempinbox.org>`,
-          'DKIM-Signature': 'v=1; a=rsa-sha256; c=relaxed/relaxed; d=tempinbox.org; s=202601; h=from:to:subject:date',
-          'SPF-Status': 'pass (spfCheck: domain of tempinbox.org designates 192.0.2.1 as permitted sender)',
-          'DMARC-Status': 'pass (p=reject)',
-        },
-        spamScore: 2,
-        spamStatus: 'Clean',
-        spamCategory: 'System Notification',
-        replyTo: 'support@tempinbox.org',
-      },
-    ]);
+// Google AdSense ads.txt verification
+app.get('/ads.txt', (req, res) => {
+  const publicPath = path.join(process.cwd(), 'public', 'ads.txt');
+  if (fs.existsSync(publicPath)) {
+    res.setHeader('Content-Type', 'text/plain; charset=UTF-8');
+    return res.sendFile(publicPath);
   }
-}
+  const distPath = path.join(process.cwd(), 'dist', 'ads.txt');
+  if (fs.existsSync(distPath)) {
+    res.setHeader('Content-Type', 'text/plain; charset=UTF-8');
+    return res.sendFile(distPath);
+  }
+  res.type('text/plain').send('google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0\n');
+});
+
+// Search Engine Optimization: robots.txt
+app.get('/robots.txt', (req, res) => {
+  const publicPath = path.join(process.cwd(), 'public', 'robots.txt');
+  if (fs.existsSync(publicPath)) {
+    res.setHeader('Content-Type', 'text/plain; charset=UTF-8');
+    return res.sendFile(publicPath);
+  }
+  res.type('text/plain').send('User-agent: *\nAllow: /\n\nSitemap: https://tempinbox.solutions/sitemap.xml\n');
+});
+
+// Search Engine Optimization: sitemap.xml
+app.get('/sitemap.xml', (req, res) => {
+  const publicPath = path.join(process.cwd(), 'public', 'sitemap.xml');
+  if (fs.existsSync(publicPath)) {
+    res.setHeader('Content-Type', 'application/xml; charset=UTF-8');
+    return res.sendFile(publicPath);
+  }
+  const distPath = path.join(process.cwd(), 'dist', 'sitemap.xml');
+  if (fs.existsSync(distPath)) {
+    res.setHeader('Content-Type', 'application/xml; charset=UTF-8');
+    return res.sendFile(distPath);
+  }
+  res.status(404).send('Sitemap not found');
+});
 
 // API Routes
 app.get('/api/v1/domains', (req, res) => {
@@ -222,9 +217,7 @@ app.post('/api/v1/generate', (req, res) => {
   };
 
   mailboxes.set(address, mailbox);
-  totalInboxesCreated++;
-
-  seedInitialMessagesIfNeeded(address);
+  sessionInboxesCreated++;
 
   res.json({
     mailbox,
@@ -238,7 +231,6 @@ app.get('/api/v1/inbox', (req, res) => {
     return res.status(400).json({ error: 'Address query parameter is required' });
   }
 
-  seedInitialMessagesIfNeeded(address);
   const list = messages.get(address) || [];
 
   res.json({
@@ -371,14 +363,15 @@ app.post('/api/v1/send-test', async (req, res) => {
     spamCategory: category,
     verificationCode: extractedCode,
     replyTo: senderEmail,
+    isTestMessage: true,
   };
 
   const list = messages.get(mailboxAddress) || [];
   list.unshift(newMsg);
   messages.set(mailboxAddress, list);
 
-  totalEmailsReceived++;
-  if (status === 'Spam') totalSpamBlocked++;
+  sessionEmailsReceived++;
+  if (status === 'Spam') sessionSpamBlocked++;
 
   res.json({
     success: true,
@@ -419,13 +412,22 @@ app.delete('/api/v1/mailbox', (req, res) => {
 });
 
 app.get('/api/v1/stats', (req, res) => {
+  const uptimeSeconds = Math.floor((Date.now() - serverStartTime) / 1000);
+  const uptimeHours = Number((uptimeSeconds / 3600).toFixed(1));
+  let totalStoredMsgs = 0;
+  for (const list of messages.values()) {
+    totalStoredMsgs += list.length;
+  }
+
   res.json({
-    activeInboxes: mailboxes.size + 1420,
-    totalEmailsReceived,
-    spamBlockedPercent: Number(((totalSpamBlocked / Math.max(1, totalEmailsReceived)) * 100).toFixed(1)),
-    avgDeliveryTimeMs: 380,
-    storageUsedMb: 142.8,
-    serverUptimeHours: 1420,
+    activeInboxes: mailboxes.size,
+    sessionInboxesCreated,
+    totalEmailsReceived: sessionEmailsReceived,
+    currentStoredMessages: totalStoredMsgs,
+    spamBlockedPercent: sessionEmailsReceived > 0 
+      ? Number(((sessionSpamBlocked / sessionEmailsReceived) * 100).toFixed(1)) 
+      : 0,
+    serverUptimeHours: uptimeHours,
   });
 });
 

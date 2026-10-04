@@ -68,7 +68,7 @@ export const DisclaimerSection: React.FC<{ onNavigateToTerms?: () => void }> = (
           </h2>
           <div className="space-y-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             <p>
-              The information and services provided on <strong>TempInbox</strong> (accessible at <span className="font-semibold text-slate-900 dark:text-white">https://tempinbox.org</span>) are for general information, testing, privacy protection, and developer automation purposes only.
+              The information and services provided on <strong>TempInbox.solutions</strong> (accessible at <span className="font-semibold text-slate-900 dark:text-white">https://tempinbox.solutions</span>) are for general information, testing, privacy protection, and developer automation purposes only.
             </p>
             <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl font-mono text-xs uppercase tracking-wide text-slate-700 dark:text-slate-200">
               ALL SERVICES, TEMPORARY MAILBOXES, API ENDPOINTS, AND GENERATED ADDRESSES ARE PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
@@ -165,7 +165,7 @@ export const DisclaimerSection: React.FC<{ onNavigateToTerms?: () => void }> = (
               For questions regarding this disclaimer, DMCA copyright notices, or abuse reporting, please contact us.
             </p>
             <p className="text-xs font-semibold text-blue-300">
-              Compliance Email: <a href="mailto:support@tempinbox.org" className="underline font-bold text-white">support@tempinbox.org</a>
+              Compliance Email: <a href="mailto:support@tempinbox.solutions" className="underline font-bold text-white">support@tempinbox.solutions</a>
             </p>
           </div>
 
