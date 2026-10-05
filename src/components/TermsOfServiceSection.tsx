@@ -242,7 +242,7 @@ export const TermsOfServiceSection: React.FC<{ initialTab?: 'terms' | 'privacy' 
                       <strong>Volatile RAM Retention:</strong> Incoming messages, verification codes, and attachments are stored strictly in volatile system memory (RAM) with dynamic Time-To-Live (TTL) expiration counters (ranging from 1 hour to 7 days based on user configuration).
                     </li>
                     <li>
-                      <strong>Automated Zero-Trace Purging:</strong> Upon expiration of the mailbox lifecycle, messages and associated metadata are automatically and permanently zeroed out from system memory. Once erased, data is 100% unrecoverable by any party.
+                      <strong>Automated Memory Purging:</strong> Upon expiration of the mailbox lifecycle, messages and associated metadata are automatically purged from active memory by our periodic cleanup worker. Once cleared, payloads cannot be restored.
                     </li>
                     <li>
                       <strong>No Outbound Sending Capability:</strong> To eliminate spam relay abuse, TempInbox does NOT permit users to send outbound emails to external domains. The service is strictly inbound-only.
@@ -696,14 +696,14 @@ export const TermsOfServiceSection: React.FC<{ initialTab?: 'terms' | 'privacy' 
                   <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800 bg-amber-50/60 dark:bg-amber-950/30 p-4 rounded-xl border border-amber-200 dark:border-amber-900/60">
                     <div className="flex items-center gap-2 text-amber-900 dark:text-amber-300 font-extrabold text-xs sm:text-sm">
                       <Shield className="w-4 h-4 text-amber-600 shrink-0" />
-                      <span>4. Mandatory TCF-Certified CMP Requirements for EEA, UK, and Switzerland</span>
+                      <span>4. TCF v2.2 Framework Alignment & Google EU User Consent Policy</span>
                     </div>
                     <div className="space-y-2 text-slate-700 dark:text-slate-200 text-xs leading-relaxed">
                       <p>
-                        Under <strong>Google's EU User Consent Policy</strong> and requirements enforced by Google AdSense, publishers serving ads to users in the <strong>European Economic Area (EEA), the United Kingdom (UK), and Switzerland</strong> are required to use a <strong>Google-certified Consent Management Platform (CMP)</strong> that integrates with the <strong>IAB Europe Transparency and Consent Framework (TCF v2.2)</strong>.
+                        Under <strong>Google's EU User Consent Policy</strong> and requirements enforced by Google AdSense, publishers serving ads to users in the <strong>European Economic Area (EEA), the United Kingdom (UK), and Switzerland</strong> must collect valid consent through a mechanism integrated with the <strong>IAB Europe Transparency and Consent Framework (TCF v2.2)</strong>.
                       </p>
                       <p>
-                        In fulfillment of this requirement, TempInbox deploys a certified TCF v2.2 Consent Management Platform interface. Prior to loading personalized advertising scripts or cookies for visitors within the EEA, UK, or Switzerland, the CMP presents a standardized consent banner providing clear, equal-prominence choices to:
+                        TempInbox deploys a standardized consent interface structured around IAB Europe TCF v2.2 specifications. Prior to loading personalized advertising scripts or cookies for visitors within the EEA, UK, or Switzerland, visitors are presented with clear, equal-prominence choices to:
                       </p>
                       <ul className="list-disc pl-5 space-y-1 text-slate-600 dark:text-slate-300">
                         <li><strong>Accept All:</strong> Grant consent across all 10 standard IAB TCF purposes and authorized ad technology vendors (including Google Vendor ID 755).</li>
@@ -821,12 +821,12 @@ export const TermsOfServiceSection: React.FC<{ initialTab?: 'terms' | 'privacy' 
                   </a>
                 </div>
 
-                <h3 className="font-bold text-slate-900 dark:text-white text-base pt-2">2. Certified TCF v2.2 Consent Management Platform (EEA, UK, Switzerland)</h3>
+                <h3 className="font-bold text-slate-900 dark:text-white text-base pt-2">2. TCF v2.2 Framework & Consent Choices (EEA, UK, Switzerland)</h3>
                 <p>
-                  For users visiting from the European Economic Area (EEA), the United Kingdom (UK), and Switzerland, Google requires that publishers use a <strong>Google-certified Consent Management Platform (CMP)</strong> that integrates with the <strong>IAB Europe Transparency and Consent Framework (TCF v2.2)</strong>.
+                  For users visiting from the European Economic Area (EEA), the United Kingdom (UK), and Switzerland, Google requires that publishers use a consent framework integrating with the <strong>IAB Europe Transparency and Consent Framework (TCF v2.2)</strong>.
                 </p>
                 <p>
-                  TempInbox integrates a fully certified TCF v2.2 CMP that gives you unhindered, equal-prominence control to Accept All, Reject All non-essential ad tracking, or customize individual TCF purposes (Purposes 1 through 10) and specific certified vendors (including Google Vendor ID 755).
+                  TempInbox provides a granular consent interface aligned with TCF v2.2 standards, giving you unhindered, equal-prominence control to Accept All, Reject All non-essential ad tracking, or customize individual TCF purposes (Purposes 1 through 10) and specific ad technology vendors (including Google Vendor ID 755). In production, publishers also have the option to trigger Google's certified CMP natively via Google AdSense Privacy & Messaging.
                 </p>
 
                 <h3 className="font-bold text-slate-900 dark:text-white text-base pt-2">3. How to Opt Out of Google Ad Personalization</h3>

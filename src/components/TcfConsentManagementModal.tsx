@@ -298,7 +298,7 @@ export const TcfConsentManagementModal: React.FC<{
                   Privacy & Cookie Consent Preferences
                 </h3>
                 <p className="text-[11px] text-blue-300 font-medium">
-                  IAB Europe Transparency and Consent Framework (TCF v2.2) Certified CMP
+                  Transparency & Consent Choices (IAB Europe TCF v2.2 Standards Aligned)
                 </p>
               </div>
             </div>
@@ -389,10 +389,13 @@ export const TcfConsentManagementModal: React.FC<{
               </div>
 
               {/* TCF Standards Confirmation */}
-              <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between text-[11px] text-slate-500">
-                <span>CMP Specification: IAB Europe TCF v2.2</span>
-                <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">✓ TCF API v2.2 ACTIVE</span>
+              <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] text-slate-500">
+                <span>Standard: IAB Europe TCF v2.2 Framework Compatible</span>
+                <span className="font-mono text-emerald-600 dark:text-emerald-400 font-semibold">Consent Controller Active</span>
               </div>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-normal">
+                Note: In production environments with active Google AdSense ad units, Google's certified CMP (Privacy & Messaging) operates alongside or replaces this interface to satisfy mandatory Google EU User Consent requirements.
+              </p>
             </div>
           )}
 

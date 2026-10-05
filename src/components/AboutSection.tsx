@@ -47,17 +47,17 @@ export const AboutSection: React.FC<{ onNavigateToTerms?: () => void }> = ({ onN
           <span>Service Architecture & Domain Infrastructure</span>
         </h2>
         <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-          To maintain transparency regarding how the service is structured across domains:
+          To maintain full transparency and compliance regarding how the service is structured across domains:
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm mb-4">
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2">
             <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
               <Globe className="w-4 h-4 text-blue-600" />
               <span>TempInbox.solutions (Primary Web Portal)</span>
             </h3>
             <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
-              This domain (<code className="font-mono text-blue-600">tempinbox.solutions</code>) serves as the primary website, user dashboard, educational documentation hub, and frontend application interface where users generate inboxes and read messages.
+              This domain (<code className="font-mono text-blue-600">tempinbox.solutions</code>) is the primary canonical website, web dashboard, technical documentation hub, and user interface where visitors generate inboxes, read messages, review privacy policies, and interact with the service.
             </p>
           </div>
 
@@ -67,9 +67,19 @@ export const AboutSection: React.FC<{ onNavigateToTerms?: () => void }> = ({ onN
               <span>Mail Routing Domains (tempinbox.org, mailhub.cc, etc.)</span>
             </h3>
             <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
-              Domain names such as <code className="font-mono text-indigo-600">tempinbox.org</code>, <code className="font-mono text-indigo-600">mailhub.cc</code>, <code className="font-mono text-indigo-600">quickmail.live</code>, and <code className="font-mono text-indigo-600">flashmail.email</code> function as mail exchange (MX) endpoints configured to receive and parse incoming SMTP packets for active disposable mailboxes.
+              Domain names such as <code className="font-mono text-indigo-600">tempinbox.org</code>, <code className="font-mono text-indigo-600">mailhub.cc</code>, and <code className="font-mono text-indigo-600">flashmail.email</code> function strictly as inbound Mail Exchange (MX) and Mail Transfer Agent (MTA) endpoints configured in DNS to receive SMTP packets for temporary mailboxes.
             </p>
           </div>
+        </div>
+
+        <div className="p-4 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 text-xs text-slate-700 dark:text-slate-300 space-y-1.5">
+          <h4 className="font-bold text-slate-900 dark:text-white text-xs flex items-center gap-1.5">
+            <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
+            <span>Clarification on the Role of tempinbox.org</span>
+          </h4>
+          <p className="leading-relaxed">
+            <strong>tempinbox.org</strong> is an auxiliary mail-routing domain operating under the exact same infrastructure and engineering team as <strong>tempinbox.solutions</strong>. It does not operate as an independent commercial platform or separate service. When an incoming email is delivered to <code className="font-mono text-slate-800 dark:text-slate-200">user@tempinbox.org</code>, our edge SMTP daemon processes the payload and delivers it directly to the active session viewable here on <code className="font-mono text-slate-800 dark:text-slate-200">tempinbox.solutions</code>.
+          </p>
         </div>
       </section>
 
@@ -125,6 +135,64 @@ export const AboutSection: React.FC<{ onNavigateToTerms?: () => void }> = ({ onN
               <li><strong>Immediate Purge Control:</strong> Users can manually click "Delete Mailbox" at any time to immediately discard the current address and any messages associated with it.</li>
               <li><strong>Public Namespace Notice:</strong> Because temporary mailboxes do not require passwords, anyone who generates or knows the exact address could potentially view messages delivered to it. Therefore, temporary inboxes should never be used for sensitive personal correspondence, banking, or recovery keys.</li>
             </ul>
+          </div>
+        </section>
+
+        {/* Editorial Guidelines & Publication Standards */}
+        <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xs">
+          <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
+              <BookOpen className="w-6 h-6 text-indigo-600" />
+              <span>Editorial Guidelines & Publishing Standards</span>
+            </h2>
+            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 uppercase">
+              Content Integrity
+            </span>
+          </div>
+
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
+            To ensure the educational content and security documentation published across TempInbox.solutions delivers genuine, trustworthy value to our readers, our writing and technical review processes adhere strictly to the following three foundational editorial guidelines:
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Guideline 1 */}
+            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-3">
+              <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm">
+                1
+              </div>
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+                IETF Protocol Grounding & Standards Verification
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                All technical explainers, email hygiene articles, and security guides must be grounded in canonical Internet Engineering Task Force (IETF) RFC specifications—specifically RFC 5321 (SMTP), RFC 7208 (SPF), RFC 6376 (DKIM), and RFC 7489 (DMARC). We strictly reject speculative threat metrics and unsupported diagnostic claims.
+              </p>
+            </div>
+
+            {/* Guideline 2 */}
+            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-3">
+              <div className="w-9 h-9 rounded-xl bg-indigo-100 dark:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm">
+                2
+              </div>
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+                Editorial Independence & Zero Commercial Bias
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                Our educational materials are produced with complete editorial autonomy. We do not accept paid placements, sponsored product comparisons, affiliate commissions, or vendor incentives. Recommendations are made exclusively based on objective technical merit, privacy hygiene, and open web standards.
+              </p>
+            </div>
+
+            {/* Guideline 3 */}
+            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-sm">
+                3
+              </div>
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+                Continuous Review & Transparent Correction Policy
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                Because email protocols and browser privacy policies change, our technical guides undergo bi-annual review to maintain currency. If a factual error, protocol deprecation, or outdated regulatory guideline is identified, we commit to immediate revision with a transparent update notice on the article.
+              </p>
+            </div>
           </div>
         </section>
 

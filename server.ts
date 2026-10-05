@@ -62,6 +62,29 @@ interface StoredMessage {
 const mailboxes = new Map<string, StoredMailbox>();
 const messages = new Map<string, StoredMessage[]>();
 
+// Ephemeral RAM-Only Retention Cleanup Worker (runs every 60 seconds)
+setInterval(() => {
+  const now = Date.now();
+  // Evict expired mailboxes and their stored message payloads from volatile memory
+  for (const [address, box] of mailboxes.entries()) {
+    if (now > box.expiresAt) {
+      mailboxes.delete(address);
+      messages.delete(address);
+    }
+  }
+  // Evict any orphaned messages if mailbox no longer exists and message age > 24 hours
+  for (const [address, msgList] of messages.entries()) {
+    if (!mailboxes.has(address)) {
+      const remaining = msgList.filter((m) => (now - m.receivedAt) < 24 * 3600 * 1000);
+      if (remaining.length === 0) {
+        messages.delete(address);
+      } else {
+        messages.set(address, remaining);
+      }
+    }
+  }
+}, 60 * 1000);
+
 // Honest runtime counters (no fabricated baseline statistics)
 const serverStartTime = Date.now();
 let sessionInboxesCreated = 0;
@@ -229,6 +252,22 @@ app.get('/api/v1/inbox', (req, res) => {
   const address = (req.query.address as string) || '';
   if (!address) {
     return res.status(400).json({ error: 'Address query parameter is required' });
+  }
+
+  // Verify volatile expiration status
+  if (mailboxes.has(address)) {
+    const box = mailboxes.get(address)!;
+    if (Date.now() > box.expiresAt) {
+      mailboxes.delete(address);
+      messages.delete(address);
+      return res.status(410).json({
+        address,
+        expired: true,
+        count: 0,
+        messages: [],
+        message: 'Mailbox has expired according to its volatile retention policy.',
+      });
+    }
   }
 
   const list = messages.get(address) || [];

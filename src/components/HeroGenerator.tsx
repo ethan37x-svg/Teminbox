@@ -93,7 +93,7 @@ export const HeroGenerator: React.FC<HeroGeneratorProps> = ({
         
         {/* Title & Subtitle */}
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-          Your Instant Private Inbox
+          Your Instant Temporary Inbox
         </h1>
         <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
           Protect your identity and keep your real inbox clean. No registration required.

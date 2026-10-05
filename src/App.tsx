@@ -345,7 +345,7 @@ export default function App() {
         type="button"
         onClick={() => setShowCmpModal(true)}
         className="fixed bottom-4 left-4 z-40 px-3 py-1.5 rounded-full bg-slate-900/90 dark:bg-slate-800/95 hover:bg-blue-600 text-white text-[11px] font-bold shadow-lg border border-slate-700/80 backdrop-blur-xs flex items-center gap-1.5 transition-all group"
-        title="Open IAB Europe TCF v2.2 Certified Consent Management Platform (CMP)"
+        title="Open Cookie Choices (IAB Europe TCF v2.2 Standards Aligned)"
       >
         <Cookie className="w-3.5 h-3.5 text-amber-400 group-hover:rotate-12 transition-transform" />
         <span className="hidden sm:inline">Cookie Choices</span>

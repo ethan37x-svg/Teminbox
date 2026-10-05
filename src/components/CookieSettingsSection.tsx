@@ -123,11 +123,11 @@ export const CookieSettingsSection: React.FC<{
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-blue-600" />
               <h3 className="font-bold text-base text-slate-900 dark:text-white">
-                IAB Europe TCF v2.2 Certified Consent Management Platform
+                IAB Europe TCF v2.2 Consent Choices & Framework Controls
               </h3>
             </div>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
-              For visitors in the European Economic Area (EEA), United Kingdom (UK), and Switzerland, Google requires a certified CMP. Launch our interactive dialog to inspect all 10 TCF purposes and vendor disclosures.
+              For visitors in the European Economic Area (EEA), United Kingdom (UK), and Switzerland, we support granular consent aligned with IAB Europe TCF v2.2 standards and Google EU User Consent requirements.
             </p>
           </div>
 
