@@ -182,6 +182,12 @@ app.get('/sitemap.xml', (req, res) => {
   res.status(404).send('Sitemap not found');
 });
 
+// Privacy Safeguard: Prevent search engines from indexing dynamic API or private mailbox responses
+app.use('/api', (req, res, next) => {
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
+  next();
+});
+
 // API Routes
 app.get('/api/v1/domains', (req, res) => {
   res.json({

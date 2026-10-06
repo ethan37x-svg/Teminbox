@@ -1,5 +1,21 @@
 export type MailboxDuration = '1h' | '3h' | '6h' | '12h' | '24h' | '2d' | '3d' | '5d' | '7d';
 
+export type NavigationTab = 
+  | 'inbox' 
+  | 'blog' 
+  | 'how-it-works' 
+  | 'api' 
+  | 'faq' 
+  | 'admin' 
+  | 'terms' 
+  | 'privacy' 
+  | 'about' 
+  | 'contact' 
+  | 'disclaimer' 
+  | 'cookies' 
+  | 'audit' 
+  | '404';
+
 export interface Mailbox {
   address: string;
   domain: string;

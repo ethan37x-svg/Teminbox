@@ -3,17 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TempInbox.solutions — Free Disposable Temporary Email & Privacy Inbox</title>
-    <meta name="description" content="Free, fast, and privacy-focused disposable temporary email generator with real-time inbox, multi-domain choices, developer APIs, and educational privacy estimation." />
+    <title>TempInbox - Temporary Email Service</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect width='20' height='16' x='2' y='4' rx='2'/><path d='m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7'/></svg>" />
+    <meta name="description" content="Fast, privacy-focused disposable temporary email generator with real-time inbox, multi-domain options, custom addresses, SEO blog, API docs, and admin analytics." />
     <link rel="canonical" href="https://tempinbox.solutions/" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://tempinbox.solutions/" />
-    <meta property="og:site_name" content="TempInbox.solutions" />
-    <meta property="og:title" content="TempInbox.solutions — Free Disposable Temporary Email & Privacy Inbox" />
-    <meta property="og:description" content="Free, fast, and privacy-focused disposable temporary email generator with real-time inbox, multi-domain choices, developer APIs, and educational privacy estimation." />
+    <meta property="og:site_name" content="TempInbox" />
+    <meta property="og:title" content="TempInbox - Temporary Email Service" />
+    <meta property="og:description" content="Fast, privacy-focused disposable temporary email generator with real-time inbox, multi-domain options, custom addresses, SEO blog, API docs, and admin analytics." />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="TempInbox.solutions — Free Disposable Temporary Email & Privacy Inbox" />
-    <meta name="twitter:description" content="Free, fast, and privacy-focused disposable temporary email generator with real-time inbox, multi-domain choices, developer APIs, and educational privacy estimation." />
+    <meta name="twitter:title" content="TempInbox - Temporary Email Service" />
+    <meta name="twitter:description" content="Fast, privacy-focused disposable temporary email generator with real-time inbox, multi-domain options, custom addresses, SEO blog, API docs, and admin analytics." />
     
     <!-- Schema.org WebApplication Structured Data -->
     <script type="application/ld+json">
@@ -33,12 +34,77 @@
     }
     </script>
 
-    <!-- Google AdSense Site Verification & Ad Tag Template -->
-    <!-- Replace ca-pub-0000000000000000 with your real AdSense Publisher ID -->
-    <meta name="google-adsense-account" content="ca-pub-0000000000000000" />
-    <!-- Uncomment when ready:
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-0000000000000000" crossorigin="anonymous"></script>
-    -->
+    <!-- ========================================================================== -->
+    <!-- 1. GOOGLE CONSENT MODE v2: Default Denied State                            -->
+    <!-- Strictly enforces ZERO tracking, advertising cookies, or analytics         -->
+    <!-- storage before explicit consent is obtained from a certified CMP.          -->
+    <!-- Essential temporary email tools operate independently without cookies.     -->
+    <!-- ========================================================================== -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('consent', 'default', {
+        'ad_storage': 'denied',
+        'ad_user_data': 'denied',
+        'ad_personalization': 'denied',
+        'analytics_storage': 'denied',
+        'personalization_storage': 'denied',
+        'functionality_storage': 'granted',
+        'security_storage': 'granted',
+        'wait_for_update': 500
+      });
+    </script>
+
+    <!-- ========================================================================== -->
+    <!-- 2. IAB EUROPE TCF v2.2 & GOOGLE CERTIFIED CMP STUB                         -->
+    <!-- Standard IAB TCF stub safely queues API calls before CMP script loads.     -->
+    <!-- Also stubs Google Privacy & Messaging (Funding Choices) window.googlefc.   -->
+    <!-- ========================================================================== -->
+    <script>
+      (function() {
+        var host = window;
+        if (!host.__tcfapi) {
+          var a = [];
+          host.__tcfapi = function() {
+            var args = arguments;
+            if (!args.length) return a;
+            if (args[0] === 'ping') {
+              var callback = args[2];
+              if (typeof callback === 'function') {
+                callback({
+                  gdprApplies: true,
+                  cmpLoaded: false,
+                  cmpStatus: 'stub',
+                  displayStatus: 'hidden',
+                  apiVersion: '2.2',
+                  tcfPolicyVersion: 2
+                }, true);
+              }
+            } else {
+              a.push(args);
+            }
+          };
+          host.__tcfapi.a = a;
+        }
+
+        // Google Privacy & Messaging (Funding Choices) hook stub
+        host.googlefc = host.googlefc || {};
+        host.googlefc.callbackQueue = host.googlefc.callbackQueue || [];
+      })();
+    </script>
+
+    <!-- ========================================================================== -->
+    <!-- 3. GOOGLE ADSENSE PRIVACY & MESSAGING CMP INTEGRATION POINT                -->
+    <!-- WHEN READY TO ACTIVATE GOOGLE CERTIFIED CMP:                              -->
+    <!-- 1. Go to Google AdSense > Privacy & messaging > European regulations       -->
+    <!-- 2. Select "Create GDPR message" and choose your site settings.            -->
+    <!-- 3. Publish the message. Google will serve the certified CMP either via    -->
+    <!--    Funding Choices or bundled with adsbygoogle.js.                        -->
+    <!-- 4. Uncomment the tag below and insert your valid publisher ID:             -->
+    <!--                                                                            -->
+    <!-- <meta name="google-adsense-account" content="ca-pub-XXXXXXXXXXXXXXXX" />   -->
+    <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+    <!-- ========================================================================== -->
     <script>
       // Polyfill/Shim to ensure window.fetch is writable and has a setter in iframe / sandboxed environments.
       // This prevents "Cannot set property fetch of #<Window> which has only a getter" when external tools or libraries patch fetch.

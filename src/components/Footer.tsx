@@ -1,185 +1,190 @@
-import React, { useState } from 'react';
-import { Mail, Shield, Lock, FileText, Globe, Rss, Heart, X, Send, Maximize2, Calculator, Cpu, Cookie, ShieldCheck } from 'lucide-react';
-import { TermsOfServiceSection } from './TermsOfServiceSection';
+import React from 'react';
+import { Mail, Shield, Cookie } from 'lucide-react';
+import { NavigationTab } from '../types';
 
 interface FooterProps {
-  onSelectTab?: (tab: 'inbox' | 'blog' | 'api' | 'faq' | 'admin' | 'terms' | 'about' | 'disclaimer' | 'cookies' | 'audit') => void;
+  onSelectTab?: (tab: NavigationTab) => void;
   onOpenCmp?: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenCmp }) => {
-  const [modalType, setModalType] = useState<'privacy' | 'terms' | 'contact' | null>(null);
-  const [contactSubmitted, setContactSubmitted] = useState(false);
+  const handleNav = (tab: Parameters<NonNullable<typeof onSelectTab>>[0]) => {
+    if (onSelectTab) {
+      onSelectTab(tab);
+    }
+  };
+
+  const handleCookieClick = () => {
+    if (onOpenCmp) {
+      onOpenCmp();
+    } else if (onSelectTab) {
+      onSelectTab('cookies');
+    }
+  };
 
   return (
-    <footer className="px-6 sm:px-8 py-6 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between text-xs font-medium text-slate-500 dark:text-slate-400 shrink-0 gap-4">
-      <div className="space-y-1 text-center md:text-left">
-        <div className="flex items-center justify-center md:justify-start gap-2">
-          <span>© {new Date().getFullYear()} TempInbox.solutions.</span>
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center gap-1">
-            <Shield className="w-3 h-3 text-blue-500" />
-            Privacy-Focused Architecture
-          </span>
-        </div>
-        <p className="text-[11px] text-slate-400 dark:text-slate-500">
-          Disposable Temporary Email • Inbound SMTP • Ephemeral In-Memory Storage
-        </p>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
-        {onSelectTab && (
-          <button 
-            onClick={() => onSelectTab('audit')} 
-            className="hover:text-blue-600 dark:hover:text-blue-400 transition font-semibold flex items-center gap-1"
-          >
-            <Calculator className="w-3.5 h-3.5 text-blue-500" />
-            <span>Privacy Audit</span>
-          </button>
-        )}
-        {onSelectTab && (
-          <button 
-            onClick={() => onSelectTab('about')} 
-            className="hover:text-slate-900 dark:hover:text-slate-200 transition"
-          >
-            About Us
-          </button>
-        )}
-        <button 
-          onClick={() => {
-            if (onSelectTab) {
-              onSelectTab('terms');
-            } else {
-              setModalType('privacy');
-            }
-          }} 
-          className="hover:text-slate-900 dark:hover:text-slate-200 transition"
-        >
-          Privacy Policy
-        </button>
-        <button 
-          onClick={() => {
-            if (onSelectTab) {
-              onSelectTab('terms');
-            } else {
-              setModalType('terms');
-            }
-          }} 
-          className="hover:text-slate-900 dark:hover:text-slate-200 transition"
-        >
-          Terms of Service
-        </button>
-        {onOpenCmp ? (
-          <button 
-            onClick={onOpenCmp} 
-            className="text-blue-600 dark:text-blue-400 hover:underline font-semibold transition flex items-center gap-1"
-            title="Open Cookie Choices and Consent Preferences"
-          >
-            <Cookie className="w-3.5 h-3.5" />
-            <span>Cookie Choices</span>
-          </button>
-        ) : onSelectTab ? (
-          <button 
-            onClick={() => onSelectTab('cookies')} 
-            className="hover:text-slate-900 dark:hover:text-slate-200 transition"
-          >
-            Cookie Settings
-          </button>
-        ) : null}
-        <button 
-          onClick={() => setModalType('contact')} 
-          className="hover:text-slate-900 dark:hover:text-slate-200 transition"
-        >
-          Contact
-        </button>
-      </div>
-
-      {/* Modal Dialog for Privacy, Terms, and Contact */}
-      {modalType && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xs animate-fadeIn overflow-y-auto">
-          <div className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-2xl shadow-2xl w-full p-6 relative my-8 ${modalType === 'terms' || modalType === 'privacy' ? 'max-w-5xl max-h-[90vh] overflow-y-auto' : 'max-w-lg'}`}>
-            <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
-              {(modalType === 'terms' || modalType === 'privacy') && onSelectTab && (
-                <button
-                  onClick={() => {
-                    setModalType(null);
-                    onSelectTab('terms');
-                  }}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white flex items-center gap-1 text-xs font-semibold bg-slate-100 dark:bg-slate-800 px-2.5 py-1"
-                  title="Expand to Full Screen"
-                >
-                  <Maximize2 className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Full View</span>
-                </button>
-              )}
-              <button
-                onClick={() => {
-                  setModalType(null);
-                  setContactSubmitted(false);
-                }}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {(modalType === 'privacy' || modalType === 'terms') && (
-              <TermsOfServiceSection initialTab={modalType === 'privacy' ? 'privacy' : 'terms'} />
-            )}
-
-            {modalType === 'contact' && (
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-                  <Mail className="w-5 h-5 text-blue-600" />
-                  <span>Contact TempInbox Support & Security</span>
-                </h3>
-                
-                {contactSubmitted ? (
-                  <div className="p-4 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs rounded-xl text-center font-medium">
-                    Thank you! Your inquiry has been sent to our security team. We reply within 24 hours.
-                  </div>
-                ) : (
-                  <form onSubmit={(e) => { e.preventDefault(); setContactSubmitted(true); }} className="space-y-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Your Email</label>
-                      <input 
-                        type="email" 
-                        required 
-                        placeholder="you@domain.com"
-                        className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Inquiry Topic</label>
-                      <select className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none">
-                        <option>General Question</option>
-                        <option>Technical RFC Inquiry</option>
-                        <option>Abuse / DMCA Report</option>
-                        <option>AdSense Compliance / Privacy / CMP</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Message</label>
-                      <textarea 
-                        required 
-                        rows={3}
-                        placeholder="How can our engineering or legal team assist you?"
-                        className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      ></textarea>
-                    </div>
-                    <button
-                      type="submit"
-                      className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 font-bold text-xs text-white transition flex items-center justify-center gap-2"
-                    >
-                      <Send className="w-4 h-4" />
-                      <span>Send Inquiry</span>
-                    </button>
-                  </form>
-                )}
+    <footer 
+      aria-label="Site Footer" 
+      className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shrink-0 transition-colors"
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        
+        {/* Main Footer Columns */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-12">
+          
+          {/* Brand Info Column (spans 2 on lg) */}
+          <div className="col-span-2 space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-xs">
+                <Mail className="w-4 h-4" />
               </div>
-            )}
+              <span className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">
+                Temp<span className="text-blue-600 dark:text-blue-400">Inbox</span>
+              </span>
+            </div>
+            
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed">
+              Independent disposable temporary email utility. Generate short-lived inboxes on demand to shield your personal email address from marketing clutter, scrapers, and spam.
+            </p>
+
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+              <Shield className="w-3.5 h-3.5 text-blue-500" />
+              <span>In-Memory Volatile Architecture</span>
+            </div>
           </div>
+
+          {/* Group 1: Product */}
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+              Product
+            </h3>
+            <ul className="space-y-2 text-xs font-medium text-slate-600 dark:text-slate-400">
+              <li>
+                <button
+                  type="button"
+                  onClick={() => handleNav('inbox')}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left"
+                >
+                  Temporary Email
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => handleNav('how-it-works')}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left"
+                >
+                  How It Works
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* Group 2: Resources */}
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+              Resources
+            </h3>
+            <ul className="space-y-2 text-xs font-medium text-slate-600 dark:text-slate-400">
+              <li>
+                <button
+                  type="button"
+                  onClick={() => handleNav('blog')}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left"
+                >
+                  Guides
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => handleNav('faq')}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left"
+                >
+                  FAQ
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* Group 3: Company */}
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+              Company
+            </h3>
+            <ul className="space-y-2 text-xs font-medium text-slate-600 dark:text-slate-400">
+              <li>
+                <button
+                  type="button"
+                  onClick={() => handleNav('about')}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left"
+                >
+                  About
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => handleNav('contact')}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left"
+                >
+                  Contact
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* Group 4: Legal & Privacy */}
+          <div className="col-span-2 sm:col-span-1 space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+              Legal
+            </h3>
+            <ul className="space-y-2 text-xs font-medium text-slate-600 dark:text-slate-400">
+              <li>
+                <button
+                  type="button"
+                  onClick={() => handleNav('privacy')}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left"
+                >
+                  Privacy Policy
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => handleNav('terms')}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left"
+                >
+                  Terms of Service
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={handleCookieClick}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left text-slate-600 dark:text-slate-400 font-medium hover:underline"
+                  title="Manage Privacy Choices and Certified CMP Consent Settings"
+                >
+                  <Cookie className="w-3.5 h-3.5 text-blue-500" />
+                  <span>Privacy / Cookie Settings</span>
+                </button>
+              </li>
+            </ul>
+          </div>
+
         </div>
-      )}
+
+        {/* Bottom Bar: Copyright & Operational Description */}
+        <div className="pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-slate-400 gap-4 text-center sm:text-left">
+          <p>
+            © {new Date().getFullYear()} TempInbox.solutions. All rights reserved.
+          </p>
+          <p className="text-[11px] text-slate-400 dark:text-slate-500">
+            Disposable Temporary Email • Inbound SMTP • Ephemeral In-Memory Storage
+          </p>
+        </div>
+
+      </div>
     </footer>
   );
 };

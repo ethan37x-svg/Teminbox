@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Mail, Search, Copy, Check, Sparkles, Inbox, RefreshCw, Send, ShieldCheck, Lock, Clock } from 'lucide-react';
 import { EmailMessage, Mailbox, SupportedLanguage } from '../types';
 import { translations } from '../data/translations';
+import { MailboxCountdown } from './MailboxCountdown';
 
 interface LiveInboxProps {
   currentLang: SupportedLanguage;
@@ -12,7 +13,7 @@ interface LiveInboxProps {
   mailbox?: Mailbox | null;
 }
 
-export const LiveInbox: React.FC<LiveInboxProps> = ({
+export const LiveInbox: React.FC<LiveInboxProps> = React.memo(({
   currentLang,
   messages,
   onSelectMessage,
@@ -23,34 +24,6 @@ export const LiveInbox: React.FC<LiveInboxProps> = ({
   const t = translations[currentLang];
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedOtpId, setCopiedOtpId] = useState<string | null>(null);
-
-  // Time remaining state for countdown timer if mailbox is provided
-  const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number }>({
-    days: 0,
-    hours: 23,
-    minutes: 59,
-    seconds: 59,
-  });
-
-  useEffect(() => {
-    if (!mailbox) return;
-
-    const updateTimer = () => {
-      const now = Date.now();
-      const diff = Math.max(0, mailbox.expiresAt - now);
-
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-      const minutes = Math.floor((diff / (1000 * 60)) % 60);
-      const seconds = Math.floor((diff / 1000) % 60);
-
-      setTimeLeft({ days, hours, minutes, seconds });
-    };
-
-    updateTimer();
-    const timer = setInterval(updateTimer, 1000);
-    return () => clearInterval(timer);
-  }, [mailbox]);
 
   const filteredMessages = messages.filter((msg) => {
     const q = searchQuery.toLowerCase();
@@ -229,32 +202,28 @@ export const LiveInbox: React.FC<LiveInboxProps> = ({
             </span>
           </div>
 
-          <div className="grid grid-cols-4 gap-2 mb-4 text-center">
-            <div className="flex flex-col items-center p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
-              <span className="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100">
-                {String(timeLeft.days).padStart(2, '0')}
-              </span>
-              <span className="text-[10px] text-slate-400 uppercase">Days</span>
+          {mailbox ? (
+            <MailboxCountdown expiresAt={mailbox.expiresAt} />
+          ) : (
+            <div className="grid grid-cols-4 gap-2 mb-4 text-center">
+              <div className="flex flex-col items-center p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <span className="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100 tabular-nums">00</span>
+                <span className="text-[10px] text-slate-400 uppercase">Days</span>
+              </div>
+              <div className="flex flex-col items-center p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <span className="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100 tabular-nums">23</span>
+                <span className="text-[10px] text-slate-400 uppercase">Hrs</span>
+              </div>
+              <div className="flex flex-col items-center p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <span className="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100 tabular-nums">59</span>
+                <span className="text-[10px] text-slate-400 uppercase">Min</span>
+              </div>
+              <div className="flex flex-col items-center p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <span className="text-lg sm:text-xl font-bold text-blue-600 dark:text-blue-400 tabular-nums">59</span>
+                <span className="text-[10px] text-slate-400 uppercase">Sec</span>
+              </div>
             </div>
-            <div className="flex flex-col items-center p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
-              <span className="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100">
-                {String(timeLeft.hours).padStart(2, '0')}
-              </span>
-              <span className="text-[10px] text-slate-400 uppercase">Hrs</span>
-            </div>
-            <div className="flex flex-col items-center p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
-              <span className="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100">
-                {String(timeLeft.minutes).padStart(2, '0')}
-              </span>
-              <span className="text-[10px] text-slate-400 uppercase">Min</span>
-            </div>
-            <div className="flex flex-col items-center p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
-              <span className="text-lg sm:text-xl font-bold text-blue-600 dark:text-blue-400">
-                {String(timeLeft.seconds).padStart(2, '0')}
-              </span>
-              <span className="text-[10px] text-slate-400 uppercase">Sec</span>
-            </div>
-          </div>
+          )}
 
           <p className="text-[11px] text-slate-400 mb-4 leading-relaxed">
             Mailbox payload is held in volatile memory and purged when the timer elapses or upon clicking Delete.
@@ -298,5 +267,7 @@ export const LiveInbox: React.FC<LiveInboxProps> = ({
 
     </div>
   );
-};
+});
+
+LiveInbox.displayName = 'LiveInbox';
 

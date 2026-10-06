@@ -4,6 +4,8 @@ import {
   Download,
   Printer,
   ShieldCheck,
+  ShieldAlert,
+  AlertTriangle,
   Copy,
   Check,
   FileText,
@@ -16,6 +18,8 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { EmailMessage, EmailAttachment } from '../types';
+import { SafeEmailViewer } from './SafeEmailViewer';
+import { sanitizeEmailHtml, evaluateAttachmentSecurity } from '../utils/emailSanitizer';
 
 interface EmailDetailModalProps {
   message: EmailMessage | null;
@@ -211,12 +215,17 @@ export const EmailDetailModal: React.FC<EmailDetailModalProps> = ({ message, onC
     document.body.appendChild(printFrame);
     const doc = printFrame.contentWindow?.document;
     if (doc) {
+      const sanitizedContent = sanitizeEmailHtml(
+        message.bodyHtml || message.bodyText,
+        { allowRemoteImages: true }
+      ).sanitizedHtml;
+
       doc.open();
       doc.write(`
         <!DOCTYPE html>
         <html>
           <head>
-            <title>${message.subject}</title>
+            <title>${message.subject.replace(/</g, '&lt;')}</title>
             <style>
               body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 24px; color: #1e293b; line-height: 1.5; }
               .header { border-bottom: 2px solid #e2e8f0; padding-bottom: 16px; margin-bottom: 20px; }
@@ -227,12 +236,12 @@ export const EmailDetailModal: React.FC<EmailDetailModalProps> = ({ message, onC
           </head>
           <body>
             <div class="header">
-              <h2>${message.subject}</h2>
-              <div class="meta"><strong>From:</strong> ${message.senderName} &lt;${message.senderEmail}&gt;</div>
-              <div class="meta"><strong>To:</strong> ${message.mailboxAddress}</div>
+              <h2>${message.subject.replace(/</g, '&lt;')}</h2>
+              <div class="meta"><strong>From:</strong> ${message.senderName.replace(/</g, '&lt;')} &lt;${message.senderEmail.replace(/</g, '&lt;')}&gt;</div>
+              <div class="meta"><strong>To:</strong> ${message.mailboxAddress.replace(/</g, '&lt;')}</div>
               <div class="meta"><strong>Date:</strong> ${new Date(message.receivedAt).toLocaleString()}</div>
             </div>
-            <div class="content">${message.bodyHtml || message.bodyText}</div>
+            <div class="content">${sanitizedContent}</div>
           </body>
         </html>
       `);
@@ -246,9 +255,16 @@ export const EmailDetailModal: React.FC<EmailDetailModalProps> = ({ message, onC
   };
 
   const handleDownloadAttachment = (att: EmailAttachment) => {
-    const sampleAttachment = `Sample export for attachment:\nFilename: ${att.filename}\nMIME Type: ${att.mimeType}\nSize: ${att.sizeFormatted}\nMailbox: ${message.mailboxAddress}\nSubject: ${message.subject}`;
-    triggerDownload(sampleAttachment, att.filename, att.mimeType || 'application/octet-stream');
-    setExportFeedback(`Attachment (${att.filename})`);
+    const sec = evaluateAttachmentSecurity(att.filename, att.mimeType);
+    if (sec.isDangerous) {
+      const confirmDownload = window.confirm(
+        `SECURITY NOTICE:\n\n${att.filename} appears to be a potentially executable or dangerous file type (${sec.riskCategory} Risk).\n\nDo you want to download this file locally for inspection?`
+      );
+      if (!confirmDownload) return;
+    }
+    const sampleAttachment = `Sample export for attachment:\nFilename: ${sec.sanitizedFilename}\nMIME Type: ${att.mimeType}\nSize: ${att.sizeFormatted}\nMailbox: ${message.mailboxAddress}\nSubject: ${message.subject}`;
+    triggerDownload(sampleAttachment, sec.sanitizedFilename, att.mimeType || 'application/octet-stream');
+    setExportFeedback(`Attachment (${sec.sanitizedFilename})`);
     setTimeout(() => setExportFeedback(null), 3000);
   };
 
@@ -480,9 +496,9 @@ export const EmailDetailModal: React.FC<EmailDetailModalProps> = ({ message, onC
         <div className="p-4 sm:p-6 overflow-y-auto flex-1 text-slate-800 dark:text-slate-200">
           
           {activeTab === 'html' && (
-            <div
-              className="prose dark:prose-invert max-w-none bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 min-h-[250px]"
-              dangerouslySetInnerHTML={{ __html: message.bodyHtml }}
+            <SafeEmailViewer
+              bodyHtml={message.bodyHtml}
+              bodyText={message.bodyText}
             />
           )}
 
@@ -574,25 +590,54 @@ export const EmailDetailModal: React.FC<EmailDetailModalProps> = ({ message, onC
                 <span>Attachments ({message.attachments.length})</span>
               </h4>
               <div className="flex flex-wrap gap-2">
-                {message.attachments.map((att) => (
-                  <div
-                    key={att.id}
-                    className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 text-xs font-medium"
-                  >
-                    <FileText className="w-4 h-4 text-blue-500" />
-                    <div>
-                      <span className="block font-semibold text-slate-800 dark:text-slate-200">{att.filename}</span>
-                      <span className="text-[10px] text-slate-400">{att.sizeFormatted}</span>
-                    </div>
-                    <button
-                      onClick={() => handleDownloadAttachment(att)}
-                      className="ml-2 p-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
-                      title="Download Attachment locally"
+                {message.attachments.map((att) => {
+                  const sec = evaluateAttachmentSecurity(att.filename, att.mimeType);
+                  return (
+                    <div
+                      key={att.id}
+                      className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-xs font-medium transition ${
+                        sec.isDangerous
+                          ? 'bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-900/60'
+                          : 'bg-slate-100 dark:bg-slate-700/60 border-slate-200 dark:border-slate-600'
+                      }`}
                     >
-                      <Download className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))}
+                      {sec.isDangerous ? (
+                        <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
+                      ) : (
+                        <FileText className="w-4 h-4 text-blue-500 shrink-0" />
+                      )}
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="block font-semibold text-slate-800 dark:text-slate-200 max-w-[200px] truncate">
+                            {sec.sanitizedFilename}
+                          </span>
+                          {sec.isDangerous && (
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 uppercase">
+                              Executable
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-slate-400">{att.sizeFormatted}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadAttachment(att)}
+                        className={`ml-2 p-1.5 rounded-lg text-white transition ${
+                          sec.isDangerous
+                            ? 'bg-red-600 hover:bg-red-700'
+                            : 'bg-blue-600 hover:bg-blue-700'
+                        }`}
+                        title={
+                          sec.isDangerous
+                            ? 'Security warning: executable file type'
+                            : 'Download Attachment locally'
+                        }
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

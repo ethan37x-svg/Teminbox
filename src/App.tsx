@@ -1,31 +1,50 @@
-import React, { useState, useEffect } from 'react';
-import { Mailbox, MailboxDuration, EmailMessage, SupportedLanguage } from './types';
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
+import { Mailbox, MailboxDuration, EmailMessage, SupportedLanguage, NavigationTab } from './types';
 import { Navbar } from './components/Navbar';
 import { HeroGenerator } from './components/HeroGenerator';
 import { LiveInbox } from './components/LiveInbox';
-import { EmailDetailModal } from './components/EmailDetailModal';
-import { SendTestEmailModal } from './components/SendTestEmailModal';
-import { QRCodeModal } from './components/QRCodeModal';
-import { AdSenseBanner } from './components/AdSenseBanners';
-import { BlogSection } from './components/BlogSection';
-import { ApiDocsSection } from './components/ApiDocsSection';
-import { FaqSection } from './components/FaqSection';
-import { AdminDashboardModal } from './components/AdminDashboardModal';
-import { TermsOfServiceSection } from './components/TermsOfServiceSection';
-import { AboutSection } from './components/AboutSection';
-import { DisclaimerSection } from './components/DisclaimerSection';
-import { CookieSettingsSection } from './components/CookieSettingsSection';
+import { HomepageInformationalSections } from './components/HomepageInformationalSections';
 import { EmailExposureRiskCalculator } from './components/EmailExposureRiskCalculator';
 import { EmailArchitectureExplainer } from './components/EmailArchitectureExplainer';
-import { ServiceIntroEducational } from './components/ServiceIntroEducational';
-import { TcfConsentManagementModal } from './components/TcfConsentManagementModal';
 import { Footer } from './components/Footer';
-import { Cookie } from 'lucide-react';
+import { isAdEligiblePage } from './config/adEligibility';
+import { blogArticles } from './data/blogArticles';
+import { initCmpListeners, reopenCmpSettings } from './utils/cmpIntegration';
+import { updateDocumentSeo } from './utils/seoManager';
+
+// Lazy-loaded routes and modals to split non-critical JavaScript chunks
+const BlogSection = lazy(() => import('./components/BlogSection').then((m) => ({ default: m.BlogSection })));
+const ApiDocsSection = lazy(() => import('./components/ApiDocsSection').then((m) => ({ default: m.ApiDocsSection })));
+const FaqSection = lazy(() => import('./components/FaqSection').then((m) => ({ default: m.FaqSection })));
+const AdminDashboardModal = lazy(() => import('./components/AdminDashboardModal').then((m) => ({ default: m.AdminDashboardModal })));
+const TermsOfServiceSection = lazy(() => import('./components/TermsOfServiceSection').then((m) => ({ default: m.TermsOfServiceSection })));
+const PrivacyPolicySection = lazy(() => import('./components/PrivacyPolicySection').then((m) => ({ default: m.PrivacyPolicySection })));
+const AboutSection = lazy(() => import('./components/AboutSection').then((m) => ({ default: m.AboutSection })));
+const ContactSection = lazy(() => import('./components/ContactSection').then((m) => ({ default: m.ContactSection })));
+const HowItWorksSection = lazy(() => import('./components/HowItWorksSection').then((m) => ({ default: m.HowItWorksSection })));
+const DisclaimerSection = lazy(() => import('./components/DisclaimerSection').then((m) => ({ default: m.DisclaimerSection })));
+const CookieSettingsSection = lazy(() => import('./components/CookieSettingsSection').then((m) => ({ default: m.CookieSettingsSection })));
+const NotFoundSection = lazy(() => import('./components/NotFoundSection').then((m) => ({ default: m.NotFoundSection })));
+const EmailDetailModal = lazy(() => import('./components/EmailDetailModal').then((m) => ({ default: m.EmailDetailModal })));
+const SendTestEmailModal = lazy(() => import('./components/SendTestEmailModal').then((m) => ({ default: m.SendTestEmailModal })));
+const QRCodeModal = lazy(() => import('./components/QRCodeModal').then((m) => ({ default: m.QRCodeModal })));
+
+// Accessible minimal fallback for lazy-loaded route transitions
+const RouteLoadingFallback = () => (
+  <div className="flex-1 flex items-center justify-center py-20 min-h-[400px]">
+    <div className="flex flex-col items-center gap-3">
+      <div className="w-8 h-8 border-3 border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
+      <span className="text-xs font-medium text-slate-400">Loading section...</span>
+    </div>
+  </div>
+);
 
 export default function App() {
   const [currentLang, setCurrentLang] = useState<SupportedLanguage>('en');
   const [darkMode, setDarkMode] = useState(false);
-  const [activeTab, setActiveTab] = useState<'inbox' | 'blog' | 'api' | 'faq' | 'admin' | 'terms' | 'about' | 'disclaimer' | 'cookies' | 'audit'>('inbox');
+  const [activeTab, setActiveTab] = useState<NavigationTab>('inbox');
+  const [activeGuideSlug, setActiveGuideSlug] = useState<string | null>(null);
+  const [attemptedNotFoundPath, setAttemptedNotFoundPath] = useState<string>('');
 
   const [mailbox, setMailbox] = useState<Mailbox | null>(null);
   const [messages, setMessages] = useState<EmailMessage[]>([]);
@@ -34,7 +53,11 @@ export default function App() {
   const [showQrCode, setShowQrCode] = useState(false);
   const [showTestEmailModal, setShowTestEmailModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showCmpModal, setShowCmpModal] = useState(false);
+
+  // Initialize Certified CMP listeners on mount
+  useEffect(() => {
+    initCmpListeners();
+  }, []);
 
   // Toggle Dark Mode class on <html>
   useEffect(() => {
@@ -45,80 +68,340 @@ export default function App() {
     }
   }, [darkMode]);
 
-  // Sync SEO Title and Meta Description per Active Tab
+  // Synchronize browser history and route on initial load & popstate
   useEffect(() => {
-    const titles: Record<string, string> = {
-      inbox: 'TempInbox.solutions — Free Disposable Temporary Email & Privacy Inbox',
-      audit: 'Email Privacy & Exposure Estimation Tool — TempInbox.solutions',
-      blog: 'Privacy & Cyber Hygiene Knowledge Base — TempInbox.solutions',
-      api: 'Developer API & Automation Docs — TempInbox.solutions',
-      faq: 'Frequently Asked Questions — TempInbox.solutions',
-      admin: 'System Health & Metrics — TempInbox.solutions',
-      terms: 'Terms of Service & Usage Policy — TempInbox.solutions',
-      about: 'About TempInbox.solutions — Mission & Infrastructure',
-      disclaimer: 'Service Disclaimer & Limitations — TempInbox.solutions',
-      cookies: 'Cookie Settings & Consent Preferences — TempInbox.solutions',
+    const syncRouteFromLocation = () => {
+      const path = window.location.pathname.replace(/^\/+/, '').replace(/\/+$/, '');
+      if (path === '' || path === '/') {
+        setActiveTab('inbox');
+        setActiveGuideSlug(null);
+      } else if (path.startsWith('guides/') || path.startsWith('blog/')) {
+        const slug = path.split('/')[1] || null;
+        if (slug) {
+          const articleExists = blogArticles.some((a) => a.slug === slug);
+          if (articleExists) {
+            setActiveTab('blog');
+            setActiveGuideSlug(slug);
+          } else {
+            setActiveTab('404');
+            setActiveGuideSlug(null);
+            setAttemptedNotFoundPath(window.location.pathname);
+          }
+        } else {
+          setActiveTab('blog');
+          setActiveGuideSlug(null);
+        }
+      } else if (path === 'guides' || path === 'blog') {
+        setActiveTab('blog');
+        setActiveGuideSlug(null);
+      } else if (path === 'how-it-works') {
+        setActiveTab('how-it-works');
+        setActiveGuideSlug(null);
+      } else if (path === 'about') {
+        setActiveTab('about');
+        setActiveGuideSlug(null);
+      } else if (path === 'contact') {
+        setActiveTab('contact');
+        setActiveGuideSlug(null);
+      } else if (path === 'faq') {
+        setActiveTab('faq');
+        setActiveGuideSlug(null);
+      } else if (path === 'terms') {
+        setActiveTab('terms');
+        setActiveGuideSlug(null);
+      } else if (path === 'privacy') {
+        setActiveTab('privacy');
+        setActiveGuideSlug(null);
+      } else if (path === 'cookies') {
+        setActiveTab('cookies');
+        setActiveGuideSlug(null);
+      } else if (path === 'api') {
+        setActiveTab('api');
+        setActiveGuideSlug(null);
+      } else if (path === 'disclaimer') {
+        setActiveTab('disclaimer');
+        setActiveGuideSlug(null);
+      } else if (path === 'audit') {
+        setActiveTab('audit');
+        setActiveGuideSlug(null);
+      } else if (path === 'admin') {
+        setActiveTab('admin');
+        setActiveGuideSlug(null);
+      } else {
+        setActiveTab('404');
+        setActiveGuideSlug(null);
+        setAttemptedNotFoundPath(window.location.pathname);
+      }
     };
 
-    const descriptions: Record<string, string> = {
-      inbox: 'Free, instant disposable temporary email addresses. Block spam, prevent tracking, and protect personal identity without registration.',
-      audit: 'Educational estimation tool evaluating digital identity surface area and email exposure factors based on general privacy practices.',
-      blog: 'In-depth technical guides, cybersecurity best practices, and protocol standards for disposable email and email authentication.',
-      api: 'Programmatic REST endpoints for generating temporary inboxes and retrieving verification messages in CI/CD automation pipelines.',
-      faq: 'Answers to frequently asked questions regarding temporary email lifespan, privacy protection, and inbound SMTP routing.',
-      admin: 'Real-time telemetry and operational metrics for TempInbox.solutions edge mail servers.',
-      terms: 'Terms of Service, acceptable usage guidelines, and service scope for TempInbox.solutions.',
-      about: 'Learn about TempInbox.solutions, our inbound-only mail architecture, and our commitment to user privacy.',
-      disclaimer: 'Important service limitations: TempInbox is an ephemeral service not intended for permanent account recovery or financial institutions.',
-      cookies: 'Manage your consent preferences for cookies and advertising personalization in accordance with GDPR and ePrivacy regulations.',
-    };
+    syncRouteFromLocation();
+    window.addEventListener('popstate', syncRouteFromLocation);
+    return () => window.removeEventListener('popstate', syncRouteFromLocation);
+  }, []);
 
-    document.title = titles[activeTab] || 'TempInbox.solutions — Free Disposable Temporary Email';
-    
-    const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) {
-      metaDesc.setAttribute('content', descriptions[activeTab] || descriptions.inbox);
+  // Handle Tab Navigation with URL sync (memoized to prevent child re-renders)
+  const handleSelectTab = useCallback((tab: NavigationTab) => {
+    setActiveTab(tab);
+    if (tab === 'blog') {
+      setActiveGuideSlug(null);
+      if (window.location.pathname !== '/guides') {
+        window.history.pushState(null, '', '/guides');
+      }
+    } else {
+      setActiveGuideSlug(null);
+      const tabPaths: Record<string, string> = {
+        inbox: '/',
+        'how-it-works': '/how-it-works',
+        audit: '/audit',
+        api: '/api',
+        faq: '/faq',
+        admin: '/admin',
+        terms: '/terms',
+        privacy: '/privacy',
+        about: '/about',
+        contact: '/contact',
+        disclaimer: '/disclaimer',
+        cookies: '/cookies',
+        '404': '/404',
+      };
+      const targetPath = tabPaths[tab] || '/';
+      if (window.location.pathname !== targetPath) {
+        window.history.pushState(null, '', targetPath);
+      }
     }
-  }, [activeTab]);
+  }, []);
+
+  const handleGuideSlugChange = useCallback((slug: string | null) => {
+    setActiveGuideSlug(slug);
+    setActiveTab('blog');
+    const targetPath = slug ? `/guides/${slug}` : '/guides';
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState(null, '', targetPath);
+    }
+  }, []);
+
+  // Comprehensive SEO, OpenGraph, Canonical & Structured Data Synchronizer
+  useEffect(() => {
+    // 1. If an individual email message detail modal is open:
+    // Strictest privacy protection: enforce noindex, nofollow, noarchive!
+    if (selectedMessage) {
+      updateDocumentSeo({
+        title: 'Temporary Message Viewer — TempInbox',
+        description: 'Viewing temporary email message. Ephemeral in-memory volatile session.',
+        canonicalUrl: 'https://tempinbox.solutions/',
+        robots: 'noindex, nofollow, noarchive',
+        ogType: 'website',
+      });
+      return;
+    }
+
+    // 2. Individual guide article
+    if (activeTab === 'blog' && activeGuideSlug) {
+      const article = blogArticles.find((a) => a.slug === activeGuideSlug);
+      if (article) {
+        updateDocumentSeo({
+          title: `${article.title} — TempInbox Guide`,
+          description: article.description,
+          canonicalUrl: `https://tempinbox.solutions/guides/${article.slug}`,
+          robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+          ogType: 'article',
+          ogImage: article.imageUrl,
+          articleData: article,
+        });
+        return;
+      }
+    }
+
+    // 3. Editorial and utility pages SEO mapping
+    const seoMap: Record<string, { title: string; description: string; canonical: string; robots: string }> = {
+      inbox: {
+        title: 'TempInbox - Temporary Email Service',
+        description: 'Fast, privacy-focused disposable temporary email generator with real-time inbox, multi-domain choices, and educational spam prevention guides.',
+        canonical: 'https://tempinbox.solutions/',
+        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+      },
+      blog: {
+        title: 'Email Privacy & Temporary Email Guides — TempInbox',
+        description: 'In-depth educational guides explaining email tracking pixels, disposable aliases, spam reduction, and online privacy architectures.',
+        canonical: 'https://tempinbox.solutions/guides',
+        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+      },
+      'how-it-works': {
+        title: 'How It Works — TempInbox Disposable Inboxes in 3 Steps',
+        description: 'Learn how TempInbox generates disposable addresses, routes inbound SMTP mail in RAM, and protects your primary mailbox from spam.',
+        canonical: 'https://tempinbox.solutions/how-it-works',
+        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+      },
+      about: {
+        title: 'About TempInbox — Ephemeral Email Architecture & Mission',
+        description: 'Learn about TempInbox\'s mission to reduce unwanted email, our volatile in-memory architecture, and our focus on email privacy.',
+        canonical: 'https://tempinbox.solutions/about',
+        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+      },
+      faq: {
+        title: 'Frequently Asked Questions — TempInbox Disposable Email',
+        description: 'Find answers to common questions about TempInbox address lifespans, MIME attachments, security boundaries, and privacy protections.',
+        canonical: 'https://tempinbox.solutions/faq',
+        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+      },
+      terms: {
+        title: 'Terms of Service & Acceptable Use Policy — TempInbox',
+        description: 'Terms of service, acceptable use guidelines, prohibited activities, and service boundaries for TempInbox temporary email.',
+        canonical: 'https://tempinbox.solutions/terms',
+        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+      },
+      privacy: {
+        title: 'Privacy Policy & Ephemeral Data Processing — TempInbox',
+        description: 'Factual, verified privacy disclosures covering TempInbox volatile in-memory storage, 24-hour expiration cycles, and zero tracking cookies.',
+        canonical: 'https://tempinbox.solutions/privacy',
+        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+      },
+      cookies: {
+        title: 'Privacy & Cookie Policy — TempInbox',
+        description: 'Information regarding cookie usage, advertising preferences, Consent Mode v2 default denials, and certified CMP integration.',
+        canonical: 'https://tempinbox.solutions/cookies',
+        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+      },
+      contact: {
+        title: 'Contact Support & Abuse Reporting — TempInbox',
+        description: 'Get in touch with the TempInbox team for technical inquiries, vulnerability disclosures, or reporting service abuse.',
+        canonical: 'https://tempinbox.solutions/contact',
+        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+      },
+      api: {
+        title: 'Developer API Documentation — TempInbox REST Endpoints',
+        description: 'Interactive documentation for TempInbox developer APIs, mailbox generation endpoints, and ephemeral email testing.',
+        canonical: 'https://tempinbox.solutions/api',
+        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+      },
+      disclaimer: {
+        title: 'Legal Disclaimer & Technical Boundaries — TempInbox',
+        description: 'Important disclosures regarding the disposable, non-permanent nature of temporary email inboxes and absence of encryption.',
+        canonical: 'https://tempinbox.solutions/disclaimer',
+        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+      },
+      audit: {
+        title: 'Privacy Audit & Exposure Calculator — TempInbox',
+        description: 'Interactive educational assessment tool calculating your email exposure risk and tracking footprint across the web.',
+        canonical: 'https://tempinbox.solutions/audit',
+        robots: 'noindex, follow',
+      },
+      admin: {
+        title: 'System Health & Admin Telemetry — TempInbox',
+        description: 'Internal system telemetry and mail node status dashboard.',
+        canonical: 'https://tempinbox.solutions/admin',
+        robots: 'noindex, nofollow',
+      },
+      '404': {
+        title: 'Page Not Found (404) — TempInbox',
+        description: 'The requested page could not be found on TempInbox. Return to our free temporary email tool or browse email privacy guides.',
+        canonical: 'https://tempinbox.solutions/404',
+        robots: 'noindex, follow',
+      },
+    };
+
+    const currentSeo = seoMap[activeTab] || seoMap['404'];
+    updateDocumentSeo({
+      title: currentSeo.title,
+      description: currentSeo.description,
+      canonicalUrl: currentSeo.canonical,
+      robots: currentSeo.robots,
+      ogType: 'website',
+    });
+  }, [activeTab, activeGuideSlug, selectedMessage]);
 
   // Initial Mailbox Generation on Load
   useEffect(() => {
     generateRandomMailbox('mailhub.cc', '24h');
   }, []);
 
-  // Check if TCF v2.2 CMP consent was previously collected; show CMP banner if new visitor
-  useEffect(() => {
-    try {
-      const consent = localStorage.getItem('tcf_consent_data_v2');
-      if (!consent) {
-        const timer = setTimeout(() => {
-          setShowCmpModal(true);
-        }, 800);
-        return () => clearTimeout(timer);
-      }
-    } catch (e) {}
-  }, []);
+  const handleOpenPrivacyCookieSettings = useCallback(() => {
+    const res = reopenCmpSettings();
+    if (!res.success) {
+      handleSelectTab('cookies');
+    }
+  }, [handleSelectTab]);
 
-  // Poll Inbox Messages every 3 seconds for real-time delivery
+  // Structural message equality check to eliminate 100% of idle re-renders
+  const areMessagesIdentical = (prev: EmailMessage[], next: EmailMessage[]): boolean => {
+    if (prev === next) return true;
+    if (prev.length !== next.length) return false;
+    for (let i = 0; i < prev.length; i++) {
+      if (
+        prev[i].id !== next[i].id ||
+        prev[i].unread !== next[i].unread ||
+        prev[i].receivedAt !== next[i].receivedAt
+      ) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // High-reliability real-time inbox polling:
+  // - 3s interval when visible (100% instant delivery)
+  // - 10s relaxed interval when hidden in background
+  // - Instant immediate sync upon switching back to tab
+  // - In-flight lock prevents overlapping requests
+  // - AbortController cleans up stale requests on address change
+  // - State equality check prevents React re-render churn
   useEffect(() => {
-    if (!mailbox) return;
+    if (!mailbox?.address) return;
+
+    let isSubscribed = true;
+    let isFetching = false;
+    const abortController = new AbortController();
 
     const fetchInboxMessages = async () => {
+      if (isFetching || !isSubscribed) return;
+      isFetching = true;
+
       try {
-        const res = await fetch(`/api/v1/inbox?address=${encodeURIComponent(mailbox.address)}`);
-        if (res.ok) {
+        const res = await fetch(
+          `/api/v1/inbox?address=${encodeURIComponent(mailbox.address)}`,
+          { signal: abortController.signal }
+        );
+        if (res.ok && isSubscribed) {
           const data = await res.json();
-          setMessages(data.messages || []);
+          const incoming: EmailMessage[] = data.messages || [];
+          setMessages((prev) => (areMessagesIdentical(prev, incoming) ? prev : incoming));
         }
-      } catch (err) {
-        console.warn('Real-time inbox sync error:', err);
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          console.warn('Real-time inbox sync error:', err);
+        }
+      } finally {
+        isFetching = false;
       }
     };
 
     fetchInboxMessages();
-    const timer = setInterval(fetchInboxMessages, 3000);
-    return () => clearInterval(timer);
-  }, [mailbox]);
+
+    let intervalId: any;
+    const startPolling = () => {
+      clearInterval(intervalId);
+      const delay = document.visibilityState === 'visible' ? 3000 : 10000;
+      intervalId = setInterval(fetchInboxMessages, delay);
+    };
+
+    startPolling();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchInboxMessages();
+      }
+      startPolling();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      isSubscribed = false;
+      clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      abortController.abort();
+    };
+  }, [mailbox?.address]);
 
   // Generate Random Address
   const generateRandomMailbox = async (domain: string, duration: MailboxDuration) => {
@@ -164,7 +447,7 @@ export default function App() {
     }
   };
 
-  // Refresh Inbox Action
+  // Refresh Inbox Action (manual forced trigger)
   const handleRefreshInbox = async () => {
     if (!mailbox) return;
     setIsLoading(true);
@@ -172,12 +455,13 @@ export default function App() {
       const res = await fetch(`/api/v1/inbox?address=${encodeURIComponent(mailbox.address)}`);
       if (res.ok) {
         const data = await res.json();
-        setMessages(data.messages || []);
+        const incoming: EmailMessage[] = data.messages || [];
+        setMessages((prev) => (areMessagesIdentical(prev, incoming) ? prev : incoming));
       }
     } catch (err) {
       console.error('Refresh error:', err);
     } finally {
-      setTimeout(() => setIsLoading(false), 500);
+      setTimeout(() => setIsLoading(false), 400);
     }
   };
 
@@ -248,13 +532,13 @@ export default function App() {
         darkMode={darkMode}
         onToggleDarkMode={() => setDarkMode(!darkMode)}
         activeTab={activeTab}
-        onSelectTab={setActiveTab}
+        onSelectTab={handleSelectTab}
         activeAddress={mailbox?.address}
         unreadCount={unreadCount}
       />
 
       <main className="flex-1 flex flex-col">
-        {/* Main Inbox & Generator View */}
+        {/* Main Inbox & Generator View — TOOL PAGE (ZERO ADS PERMITTED) */}
         {activeTab === 'inbox' && (
           <>
             <HeroGenerator
@@ -270,13 +554,7 @@ export default function App() {
               isLoading={isLoading}
             />
 
-            {/* Educational Service Overview: How it Works, Scope & Limitations */}
-            <ServiceIntroEducational />
-
-            {/* Non-intrusive AdSense Banner below Hero */}
-            <AdSenseBanner placement="hero-bottom" />
-
-            {/* Live Real-time Inbox */}
+            {/* Live Real-time Inbox Feed (Tool component - Zero ads) */}
             <LiveInbox
               currentLang={currentLang}
               messages={messages}
@@ -286,20 +564,21 @@ export default function App() {
               mailbox={mailbox}
             />
 
-            {/* Deep Value Section: Interactive Privacy Diagnostic Calculator & Architecture Explainer */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-10 space-y-10 w-full">
+            {/* Substantial Original Informational Sections Below The Tool */}
+            <HomepageInformationalSections
+              onNavigateGuide={handleGuideSlugChange}
+              onNavigateTab={handleSelectTab}
+            />
+
+            {/* Supplementary Privacy Diagnostic Calculator & Architecture Explainer */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12 space-y-10 w-full">
               <EmailExposureRiskCalculator />
               <EmailArchitectureExplainer />
-            </div>
-
-            {/* FAQ Section underneath Inbox */}
-            <div className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 mt-auto py-12">
-              <FaqSection />
             </div>
           </>
         )}
 
-        {/* Dedicated Privacy Audit & Exposure Risk Calculator Tab */}
+        {/* Dedicated Privacy Audit & Exposure Risk Calculator Tab (Tool Page - Zero ads) */}
         {activeTab === 'audit' && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10 w-full animate-fadeIn">
             <EmailExposureRiskCalculator />
@@ -307,73 +586,100 @@ export default function App() {
           </div>
         )}
 
-        {/* SEO Blog & Guides Tab */}
-        {activeTab === 'blog' && <BlogSection />}
+        {/* Suspense boundary for lazy-loaded secondary editorial routes */}
+        <Suspense fallback={<RouteLoadingFallback />}>
+          {/* SEO Blog & Guides Tab (Editorial Content — Ad Eligible on /guides and /guides/:slug) */}
+          {activeTab === 'blog' && (
+            <BlogSection 
+              initialSlug={activeGuideSlug} 
+              onSlugChange={handleGuideSlugChange} 
+            />
+          )}
 
-        {/* Developer API Tab */}
-        {activeTab === 'api' && <ApiDocsSection />}
+          {/* Developer API Tab */}
+          {activeTab === 'api' && <ApiDocsSection />}
 
-        {/* FAQ Tab */}
-        {activeTab === 'faq' && <FaqSection />}
+          {/* FAQ Tab (Editorial Content) */}
+          {activeTab === 'faq' && <FaqSection />}
 
-        {/* Admin Dashboard Tab */}
-        {activeTab === 'admin' && <AdminDashboardModal />}
+          {/* Admin Dashboard Tab */}
+          {activeTab === 'admin' && <AdminDashboardModal />}
 
-        {/* Terms of Service & Privacy Page Tab */}
-        {activeTab === 'terms' && <TermsOfServiceSection />}
+          {/* Terms of Service Page Tab */}
+          {activeTab === 'terms' && <TermsOfServiceSection onNavigateTab={handleSelectTab} />}
 
-        {/* About Us Page Tab */}
-        {activeTab === 'about' && <AboutSection onNavigateToTerms={() => setActiveTab('terms')} />}
+          {/* Privacy Policy Page Tab (Verified Ephemeral Architecture — Zero Ads During Consent Flow) */}
+          {activeTab === 'privacy' && (
+            <PrivacyPolicySection 
+              onNavigateTab={handleSelectTab} 
+              onOpenCmp={handleOpenPrivacyCookieSettings} 
+            />
+          )}
 
-        {/* Disclaimer Page Tab */}
-        {activeTab === 'disclaimer' && <DisclaimerSection onNavigateToTerms={() => setActiveTab('terms')} />}
+          {/* About Us Page Tab */}
+          {activeTab === 'about' && (
+            <AboutSection 
+              onNavigateToTerms={() => handleSelectTab('terms')} 
+              onNavigateToContact={() => handleSelectTab('contact')}
+            />
+          )}
 
-        {/* Cookie Settings Page Tab */}
-        {activeTab === 'cookies' && (
-          <CookieSettingsSection 
-            onNavigateToTerms={() => setActiveTab('terms')} 
-            onOpenCmp={() => setShowCmpModal(true)}
-          />
-        )}
+          {/* Contact Page Tab (Direct Communication Channels — Zero Ads) */}
+          {activeTab === 'contact' && (
+            <ContactSection onNavigateTab={handleSelectTab} />
+          )}
+
+          {/* Disclaimer Page Tab (Editorial Content) */}
+          {activeTab === 'disclaimer' && <DisclaimerSection onNavigateToTerms={() => handleSelectTab('terms')} />}
+
+          {/* Cookie Settings Page Tab (Editorial Content) */}
+          {activeTab === 'cookies' && (
+            <CookieSettingsSection 
+              onNavigateToTerms={() => handleSelectTab('terms')} 
+              onNavigateToPrivacy={() => handleSelectTab('privacy')}
+            />
+          )}
+
+          {/* How It Works Tab (Educational 3-Step Lifecycle) */}
+          {activeTab === 'how-it-works' && (
+            <HowItWorksSection onNavigateTab={handleSelectTab} />
+          )}
+
+          {/* 404 Page Not Found Tab */}
+          {activeTab === '404' && (
+            <NotFoundSection 
+              onNavigateHome={() => handleSelectTab('inbox')}
+              onNavigateGuides={() => handleSelectTab('blog')}
+              attemptedPath={attemptedNotFoundPath}
+            />
+          )}
+        </Suspense>
       </main>
 
       {/* Footer */}
-      <Footer onSelectTab={setActiveTab} onOpenCmp={() => setShowCmpModal(true)} />
-
-      {/* Floating Persistent TCF v2.2 CMP Quick Access Button */}
-      <button
-        type="button"
-        onClick={() => setShowCmpModal(true)}
-        className="fixed bottom-4 left-4 z-40 px-3 py-1.5 rounded-full bg-slate-900/90 dark:bg-slate-800/95 hover:bg-blue-600 text-white text-[11px] font-bold shadow-lg border border-slate-700/80 backdrop-blur-xs flex items-center gap-1.5 transition-all group"
-        title="Open Cookie Choices (IAB Europe TCF v2.2 Standards Aligned)"
-      >
-        <Cookie className="w-3.5 h-3.5 text-amber-400 group-hover:rotate-12 transition-transform" />
-        <span className="hidden sm:inline">Cookie Choices</span>
-        <span className="px-1.5 py-0.2 rounded text-[9px] bg-blue-500/30 text-blue-300 font-mono">TCF v2.2</span>
-      </button>
-
-      {/* TCF v2.2 Certified Consent Management Platform Modal */}
-      <TcfConsentManagementModal
-        isOpen={showCmpModal}
-        onClose={() => setShowCmpModal(false)}
+      <Footer 
+        onSelectTab={handleSelectTab} 
+        onOpenCmp={handleOpenPrivacyCookieSettings} 
       />
 
-      {/* Modals */}
-      {selectedMessage && (
-        <EmailDetailModal message={selectedMessage} onClose={() => setSelectedMessage(null)} />
-      )}
+      {/* Lazy Modals wrapped in Suspense boundary */}
+      <Suspense fallback={null}>
+        {selectedMessage && (
+          <EmailDetailModal message={selectedMessage} onClose={() => setSelectedMessage(null)} />
+        )}
 
-      {showTestEmailModal && mailbox && (
-        <SendTestEmailModal
-          activeAddress={mailbox.address}
-          onClose={() => setShowTestEmailModal(false)}
-          onSendTest={handleSendTestEmail}
-        />
-      )}
+        {showTestEmailModal && mailbox && (
+          <SendTestEmailModal
+            activeAddress={mailbox.address}
+            onClose={() => setShowTestEmailModal(false)}
+            onSendTest={handleSendTestEmail}
+          />
+        )}
 
-      {showQrCode && mailbox && (
-        <QRCodeModal address={mailbox.address} onClose={() => setShowQrCode(false)} />
-      )}
+        {showQrCode && mailbox && (
+          <QRCodeModal address={mailbox.address} onClose={() => setShowQrCode(false)} />
+        )}
+      </Suspense>
 
     </div>
   );

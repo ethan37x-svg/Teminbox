@@ -29,7 +29,7 @@ const durationOptions: { key: MailboxDuration; label: string; hours: number }[] 
   { key: '7d', label: '7 Days', hours: 168 },
 ];
 
-export const HeroGenerator: React.FC<HeroGeneratorProps> = ({
+export const HeroGenerator: React.FC<HeroGeneratorProps> = React.memo(({
   currentLang,
   mailbox,
   onGenerateRandom,
@@ -47,32 +47,6 @@ export const HeroGenerator: React.FC<HeroGeneratorProps> = ({
   const [activeTab, setActiveTab] = useState<'random' | 'custom'>('random');
   const [customInput, setCustomInput] = useState('');
   const [copied, setCopied] = useState(false);
-
-  // Time remaining state for countdown timer
-  const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number }>({
-    days: 0,
-    hours: 23,
-    minutes: 59,
-    seconds: 59,
-  });
-
-  useEffect(() => {
-    if (!mailbox) return;
-
-    const timer = setInterval(() => {
-      const now = Date.now();
-      const diff = Math.max(0, mailbox.expiresAt - now);
-
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-      const minutes = Math.floor((diff / (1000 * 60)) % 60);
-      const seconds = Math.floor((diff / 1000) % 60);
-
-      setTimeLeft({ days, hours, minutes, seconds });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [mailbox]);
 
   const handleCopy = () => {
     if (!mailbox) return;
@@ -234,4 +208,6 @@ export const HeroGenerator: React.FC<HeroGeneratorProps> = ({
       </div>
     </header>
   );
-};
+});
+
+HeroGenerator.displayName = 'HeroGenerator';

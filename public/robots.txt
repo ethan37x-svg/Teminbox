@@ -1,4 +1,24 @@
 User-agent: *
 Allow: /
+Allow: /guides
+Allow: /guides/*
+Allow: /about
+Allow: /how-it-works
+Allow: /faq
+Allow: /terms
+Allow: /privacy
+Allow: /cookies
+Allow: /contact
+Allow: /api
+
+# Protect User Privacy: Strict Disallow for Ephemeral Inboxes & Private Message Streams
+Disallow: /api/v1/inbox
+Disallow: /api/v1/message/
+Disallow: /api/v1/messages/
+Disallow: /messages
+Disallow: /messages/
+Disallow: /inbox/
+Disallow: /admin
+Disallow: /audit
 
 Sitemap: https://tempinbox.solutions/sitemap.xml

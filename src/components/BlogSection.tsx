@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BookOpen, Search, Clock, User, Tag, ArrowLeft, Share2, Copy, Check, 
   ChevronRight, MessageSquare, ShieldCheck, Award, CheckCircle2, FileText, 
@@ -6,16 +6,36 @@ import {
 } from 'lucide-react';
 import { BlogArticle } from '../types';
 import { blogArticles } from '../data/blogArticles';
+import { AdSenseBanner } from './AdSenseBanners';
+import { isAdEligiblePage } from '../config/adEligibility';
 
 interface BlogSectionProps {
-  onSelectArticle?: (article: BlogArticle) => void;
+  initialSlug?: string | null;
+  onSlugChange?: (slug: string | null) => void;
 }
 
-export const BlogSection: React.FC<BlogSectionProps> = () => {
-  const [selectedArticle, setSelectedArticle] = useState<BlogArticle | null>(null);
+export const BlogSection: React.FC<BlogSectionProps> = ({ initialSlug, onSlugChange }) => {
+  const [selectedArticle, setSelectedArticle] = useState<BlogArticle | null>(() => {
+    if (initialSlug) {
+      return blogArticles.find((a) => a.slug === initialSlug) || null;
+    }
+    return null;
+  });
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedLink, setCopiedLink] = useState(false);
+
+  // Sync with initialSlug if prop changes
+  useEffect(() => {
+    if (initialSlug) {
+      const match = blogArticles.find((a) => a.slug === initialSlug);
+      if (match && match.slug !== selectedArticle?.slug) {
+        setSelectedArticle(match);
+      }
+    } else if (initialSlug === null && selectedArticle !== null) {
+      setSelectedArticle(null);
+    }
+  }, [initialSlug]);
 
   const categories = ['All', 'Privacy', 'Tutorials', 'Security', 'Comparisons', 'Productivity'];
 
@@ -38,27 +58,46 @@ export const BlogSection: React.FC<BlogSectionProps> = () => {
 
   // Render article detailed view
   if (selectedArticle) {
-    // Generate Schema.org Article JSON-LD
+    // Generate Schema.org Article and BreadcrumbList JSON-LD
     const jsonLd = {
       '@context': 'https://schema.org',
-      '@type': 'TechArticle',
-      'headline': selectedArticle.title,
-      'description': selectedArticle.description,
-      'author': {
-        '@type': 'Person',
-        'name': selectedArticle.author,
-        'jobTitle': 'Cybersecurity Researcher',
-      },
-      'datePublished': selectedArticle.date,
-      'publisher': {
-        '@type': 'Organization',
-        'name': 'TempInbox.solutions',
-        'url': 'https://tempinbox.solutions',
-        'logo': {
-          '@type': 'ImageObject',
-          'url': 'https://tempinbox.solutions/tempinbox-icon.svg',
+      '@graph': [
+        {
+          '@type': 'Article',
+          'headline': selectedArticle.title,
+          'description': selectedArticle.description,
+          'image': selectedArticle.imageUrl,
+          'mainEntityOfPage': `https://tempinbox.solutions/guides/${selectedArticle.slug}`,
+          'publisher': {
+            '@type': 'Organization',
+            'name': 'TempInbox',
+            'url': 'https://tempinbox.solutions/',
+          },
         },
-      },
+        {
+          '@type': 'BreadcrumbList',
+          'itemListElement': [
+            {
+              '@type': 'ListItem',
+              'position': 1,
+              'name': 'Home',
+              'item': 'https://tempinbox.solutions/',
+            },
+            {
+              '@type': 'ListItem',
+              'position': 2,
+              'name': 'Guides',
+              'item': 'https://tempinbox.solutions/guides',
+            },
+            {
+              '@type': 'ListItem',
+              'position': 3,
+              'name': selectedArticle.title,
+              'item': `https://tempinbox.solutions/guides/${selectedArticle.slug}`,
+            },
+          ],
+        },
+      ],
     };
 
     return (
@@ -67,22 +106,47 @@ export const BlogSection: React.FC<BlogSectionProps> = () => {
         {/* Inject Schema.org JSON-LD */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-        {/* Breadcrumbs */}
-        <nav className="flex items-center gap-2 text-xs text-slate-500 mb-6">
-          <button onClick={() => setSelectedArticle(null)} className="hover:text-blue-600 font-semibold">
-            Home
-          </button>
-          <ChevronRight className="w-3.5 h-3.5" />
-          <button onClick={() => setSelectedArticle(null)} className="hover:text-blue-600 font-semibold">
-            Guides & Research
-          </button>
-          <ChevronRight className="w-3.5 h-3.5" />
-          <span className="truncate text-slate-800 dark:text-slate-300 font-medium">{selectedArticle.title}</span>
+        {/* Semantic Accessible Breadcrumb Navigation */}
+        <nav aria-label="Breadcrumb" className="mb-6">
+          <ol className="flex items-center gap-2 text-xs text-slate-500 list-none p-0 m-0">
+            <li className="flex items-center gap-2">
+              <button 
+                type="button"
+                onClick={() => {
+                  window.history.pushState(null, '', '/');
+                  window.dispatchEvent(new PopStateEvent('popstate'));
+                }} 
+                className="hover:text-blue-600 font-semibold focus:outline-none focus:ring-1 focus:ring-blue-500 rounded"
+              >
+                Home
+              </button>
+              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+            </li>
+            <li className="flex items-center gap-2">
+              <button 
+                type="button"
+                onClick={() => {
+                  setSelectedArticle(null);
+                  onSlugChange?.(null);
+                }} 
+                className="hover:text-blue-600 font-semibold focus:outline-none focus:ring-1 focus:ring-blue-500 rounded"
+              >
+                Guides
+              </button>
+              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+            </li>
+            <li aria-current="page" className="truncate text-slate-800 dark:text-slate-300 font-medium max-w-sm sm:max-w-md">
+              {selectedArticle.title}
+            </li>
+          </ol>
         </nav>
 
         {/* Back Button */}
         <button
-          onClick={() => setSelectedArticle(null)}
+          onClick={() => {
+            setSelectedArticle(null);
+            onSlugChange?.(null);
+          }}
           className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -120,11 +184,11 @@ export const BlogSection: React.FC<BlogSectionProps> = () => {
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-sm text-slate-900 dark:text-white">{selectedArticle.author}</span>
                     <span className="text-[10px] font-bold bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded">
-                      Verified Author
+                      Author
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Fact-checked against IETF protocol standards • Published {selectedArticle.date}
+                    Published: {selectedArticle.date} • Category: {selectedArticle.category}
                   </p>
                 </div>
               </div>
@@ -143,10 +207,10 @@ export const BlogSection: React.FC<BlogSectionProps> = () => {
             <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700/60 flex flex-wrap items-center gap-y-1 gap-x-4 text-[11px] text-slate-500 dark:text-slate-400">
               <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                Fact-Checked against IETF Standards (RFC 5321, RFC 7208, RFC 6376)
+                Fact-Checked Educational Resource
               </span>
               <span>•</span>
-              <span>Zero Sponsored Bias</span>
+              <span>Independent Educational Content</span>
               <span>•</span>
               <span>Updated for 2026 Standards</span>
             </div>
@@ -158,7 +222,7 @@ export const BlogSection: React.FC<BlogSectionProps> = () => {
           <div className="mb-8 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-md">
             <img
               src={selectedArticle.imageUrl}
-              alt={selectedArticle.title}
+              alt={`Cover illustration for guide: ${selectedArticle.title}`}
               referrerPolicy="no-referrer"
               className="w-full h-64 sm:h-80 md:h-[420px] object-cover"
             />
@@ -192,6 +256,12 @@ export const BlogSection: React.FC<BlogSectionProps> = () => {
             </ul>
           </div>
         )}
+
+        {/* Editorial AdSense Placement (Strictly Gated to /guides/:slug) */}
+        <AdSenseBanner 
+          placement="in-article" 
+          currentRoute={`/guides/${selectedArticle.slug}`} 
+        />
 
         {/* Article Body Content */}
         <div className="prose dark:prose-invert max-w-none text-slate-800 dark:text-slate-200 leading-relaxed text-sm sm:text-base space-y-4">
@@ -342,15 +412,18 @@ export const BlogSection: React.FC<BlogSectionProps> = () => {
       <div className="text-center max-w-3xl mx-auto mb-10">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 text-xs font-bold mb-3">
           <BookOpen className="w-4 h-4" />
-          <span>Peer-Reviewed Privacy Research & Architecture</span>
+          <span>Educational Privacy Resources & Technical Analysis</span>
         </div>
-        <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">
-          Cybersecurity & Disposable Email Research Library
-        </h2>
-        <p className="text-slate-600 dark:text-slate-400 text-sm">
-          Original, technically rigorous masterclasses on email delivery protocols, anti-phishing safeguards, cross-site identity defense, and QA automation workflows.
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3">
+          Email Privacy & Temporary Email Guides
+        </h1>
+        <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base leading-relaxed">
+          Comprehensive, research-backed guides on disposable inboxes, email privacy fundamentals, spam defense strategies, and modern tracking mechanics.
         </p>
       </div>
+
+      {/* Editorial Header Ad Placement (Strictly Gated to /guides) */}
+      <AdSenseBanner placement="editorial-header" currentRoute="/guides" />
 
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-8">
@@ -391,14 +464,17 @@ export const BlogSection: React.FC<BlogSectionProps> = () => {
         {filteredArticles.map((article) => (
           <article
             key={article.id}
-            onClick={() => setSelectedArticle(article)}
+            onClick={() => {
+              setSelectedArticle(article);
+              onSlugChange?.(article.slug);
+            }}
             className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between overflow-hidden group"
           >
             {article.imageUrl && (
               <div className="h-48 overflow-hidden bg-slate-100 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-700/60 relative">
                 <img
                   src={article.imageUrl}
-                  alt={article.title}
+                  alt={`Illustration for guide: ${article.title}`}
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />

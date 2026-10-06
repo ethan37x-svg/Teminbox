@@ -4,7 +4,7 @@ import {
   HelpCircle, ExternalLink, Code, Layers, Sparkles, RefreshCw, Zap, Eye
 } from 'lucide-react';
 
-export const EmailArchitectureExplainer: React.FC = () => {
+export const EmailArchitectureExplainer: React.FC = React.memo(() => {
   const [activeProtocol, setActiveProtocol] = useState<'spf' | 'dkim' | 'dmarc' | 'tls' | 'tmpfs'>('spf');
 
   const protocols = {
@@ -270,4 +270,6 @@ export const EmailArchitectureExplainer: React.FC = () => {
 
     </div>
   );
-};
+});
+
+EmailArchitectureExplainer.displayName = 'EmailArchitectureExplainer';

@@ -15,7 +15,7 @@ interface FactorAnalysis {
   explanation: string;
 }
 
-export const EmailExposureRiskCalculator: React.FC = () => {
+export const EmailExposureRiskCalculator: React.FC = React.memo(() => {
   // Educational scenario inputs
   const [accountCount, setAccountCount] = useState<number>(35);
   const [trialFrequency, setTrialFrequency] = useState<number>(3); // per month
@@ -629,4 +629,6 @@ export const EmailExposureRiskCalculator: React.FC = () => {
 
     </div>
   );
-};
+});
+
+EmailExposureRiskCalculator.displayName = 'EmailExposureRiskCalculator';
