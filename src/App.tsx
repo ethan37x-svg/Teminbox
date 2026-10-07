@@ -252,13 +252,13 @@ export default function App() {
       },
       privacy: {
         title: 'Privacy Policy & Ephemeral Data Processing — TempInbox',
-        description: 'Factual, verified privacy disclosures covering TempInbox volatile in-memory storage, 24-hour expiration cycles, and zero tracking cookies.',
+        description: 'Factual privacy disclosures covering TempInbox volatile RAM architecture, infrastructure logging, and third-party advertising processing.',
         canonical: 'https://tempinbox.solutions/privacy',
         robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
       },
       cookies: {
         title: 'Privacy & Cookie Policy — TempInbox',
-        description: 'Information regarding cookie usage, advertising preferences, Consent Mode v2 default denials, and certified CMP integration.',
+        description: 'Information regarding cookie usage, advertising preferences, Consent Mode v2 default denials, and planned certified CMP integration.',
         canonical: 'https://tempinbox.solutions/cookies',
         robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
       },

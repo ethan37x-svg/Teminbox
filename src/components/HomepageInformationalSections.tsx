@@ -530,21 +530,35 @@ export const HomepageInformationalSections: React.FC<HomepageInformationalSectio
             </p>
           </div>
 
-          <button
-            onClick={() => onNavigateTab('blog')}
+          <a
+            href="/guides"
+            onClick={(e) => {
+              if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+                e.preventDefault();
+                onNavigateTab('blog');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm transition self-start sm:self-auto shadow-xs"
           >
             <span>View All Guides</span>
             <ArrowRight className="w-4 h-4" />
-          </button>
+          </a>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {featuredGuides.map((guide) => (
-            <article
+            <a
               key={guide.id}
-              onClick={() => onNavigateGuide(guide.slug)}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xs hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 transition cursor-pointer flex flex-col justify-between group"
+              href={`/guides/${guide.slug}`}
+              onClick={(e) => {
+                if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+                  e.preventDefault();
+                  onNavigateGuide(guide.slug);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xs hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 transition cursor-pointer flex flex-col justify-between group no-underline text-inherit"
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-xs">
@@ -570,7 +584,7 @@ export const HomepageInformationalSections: React.FC<HomepageInformationalSectio
                 <span>Read Guide</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </div>
-            </article>
+            </a>
           ))}
         </div>
       </section>
@@ -632,13 +646,20 @@ export const HomepageInformationalSections: React.FC<HomepageInformationalSectio
         </div>
 
         <div className="mt-8 text-center">
-          <button
-            onClick={() => onNavigateTab('faq')}
+          <a
+            href="/faq"
+            onClick={(e) => {
+              if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+                e.preventDefault();
+                onNavigateTab('faq');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
             className="inline-flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
           >
             <span>Have more questions? Browse our complete protocol & technical FAQ</span>
             <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          </a>
         </div>
       </section>
 

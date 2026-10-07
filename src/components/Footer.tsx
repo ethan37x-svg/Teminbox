@@ -8,17 +8,25 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenCmp }) => {
-  const handleNav = (tab: Parameters<NonNullable<typeof onSelectTab>>[0]) => {
-    if (onSelectTab) {
-      onSelectTab(tab);
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, tab: Parameters<NonNullable<typeof onSelectTab>>[0]) => {
+    if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+      e.preventDefault();
+      if (onSelectTab) {
+        onSelectTab(tab);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
   };
 
-  const handleCookieClick = () => {
-    if (onOpenCmp) {
-      onOpenCmp();
-    } else if (onSelectTab) {
-      onSelectTab('cookies');
+  const handleCookieClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+      e.preventDefault();
+      if (onOpenCmp) {
+        onOpenCmp();
+      } else if (onSelectTab) {
+        onSelectTab('cookies');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
   };
 
@@ -60,22 +68,22 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenCmp }) => {
             </h3>
             <ul className="space-y-2 text-xs font-medium text-slate-600 dark:text-slate-400">
               <li>
-                <button
-                  type="button"
-                  onClick={() => handleNav('inbox')}
-                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left"
+                <a
+                  href="/"
+                  onClick={(e) => handleLinkClick(e, 'inbox')}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left inline-block"
                 >
                   Temporary Email
-                </button>
+                </a>
               </li>
               <li>
-                <button
-                  type="button"
-                  onClick={() => handleNav('how-it-works')}
-                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left"
+                <a
+                  href="/how-it-works"
+                  onClick={(e) => handleLinkClick(e, 'how-it-works')}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left inline-block"
                 >
                   How It Works
-                </button>
+                </a>
               </li>
             </ul>
           </div>
@@ -87,22 +95,22 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenCmp }) => {
             </h3>
             <ul className="space-y-2 text-xs font-medium text-slate-600 dark:text-slate-400">
               <li>
-                <button
-                  type="button"
-                  onClick={() => handleNav('blog')}
-                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left"
+                <a
+                  href="/guides"
+                  onClick={(e) => handleLinkClick(e, 'blog')}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left inline-block"
                 >
                   Guides
-                </button>
+                </a>
               </li>
               <li>
-                <button
-                  type="button"
-                  onClick={() => handleNav('faq')}
-                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left"
+                <a
+                  href="/faq"
+                  onClick={(e) => handleLinkClick(e, 'faq')}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left inline-block"
                 >
                   FAQ
-                </button>
+                </a>
               </li>
             </ul>
           </div>
@@ -114,22 +122,22 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenCmp }) => {
             </h3>
             <ul className="space-y-2 text-xs font-medium text-slate-600 dark:text-slate-400">
               <li>
-                <button
-                  type="button"
-                  onClick={() => handleNav('about')}
-                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left"
+                <a
+                  href="/about"
+                  onClick={(e) => handleLinkClick(e, 'about')}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left inline-block"
                 >
                   About
-                </button>
+                </a>
               </li>
               <li>
-                <button
-                  type="button"
-                  onClick={() => handleNav('contact')}
-                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left"
+                <a
+                  href="/contact"
+                  onClick={(e) => handleLinkClick(e, 'contact')}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left inline-block"
                 >
                   Contact
-                </button>
+                </a>
               </li>
             </ul>
           </div>
@@ -141,33 +149,33 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenCmp }) => {
             </h3>
             <ul className="space-y-2 text-xs font-medium text-slate-600 dark:text-slate-400">
               <li>
-                <button
-                  type="button"
-                  onClick={() => handleNav('privacy')}
-                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left"
+                <a
+                  href="/privacy"
+                  onClick={(e) => handleLinkClick(e, 'privacy')}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left inline-block"
                 >
                   Privacy Policy
-                </button>
+                </a>
               </li>
               <li>
-                <button
-                  type="button"
-                  onClick={() => handleNav('terms')}
-                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left"
+                <a
+                  href="/terms"
+                  onClick={(e) => handleLinkClick(e, 'terms')}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left inline-block"
                 >
                   Terms of Service
-                </button>
+                </a>
               </li>
               <li>
-                <button
-                  type="button"
+                <a
+                  href="/cookies"
                   onClick={handleCookieClick}
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left text-slate-600 dark:text-slate-400 font-medium hover:underline"
                   title="Manage Privacy Choices and Certified CMP Consent Settings"
                 >
                   <Cookie className="w-3.5 h-3.5 text-blue-500" />
                   <span>Privacy / Cookie Settings</span>
-                </button>
+                </a>
               </li>
             </ul>
           </div>

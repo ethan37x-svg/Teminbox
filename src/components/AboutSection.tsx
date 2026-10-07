@@ -150,24 +150,36 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
       {/* Footer Navigation */}
       <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4">
         {onNavigateToContact && (
-          <button
-            type="button"
-            onClick={onNavigateToContact}
+          <a
+            href="/contact"
+            onClick={(e) => {
+              if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+                e.preventDefault();
+                onNavigateToContact();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm transition shadow-xs"
           >
             <Mail className="w-4 h-4" />
             <span>Contact Support</span>
-          </button>
+          </a>
         )}
         {onNavigateToTerms && (
-          <button
-            type="button"
-            onClick={onNavigateToTerms}
+          <a
+            href="/terms"
+            onClick={(e) => {
+              if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+                e.preventDefault();
+                onNavigateToTerms();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition"
           >
             <span>Read Terms of Service</span>
             <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          </a>
         )}
       </div>
 

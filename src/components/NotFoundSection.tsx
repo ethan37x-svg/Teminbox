@@ -38,23 +38,35 @@ export const NotFoundSection: React.FC<NotFoundSectionProps> = ({
 
       {/* Helpful Navigation Links */}
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-        <button
-          type="button"
-          onClick={onNavigateHome}
+        <a
+          href="/"
+          onClick={(e) => {
+            if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+              e.preventDefault();
+              onNavigateHome();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          }}
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <Home className="w-4 h-4" />
           <span>Return to Homepage & Inbox</span>
-        </button>
+        </a>
 
-        <button
-          type="button"
-          onClick={onNavigateGuides}
+        <a
+          href="/guides"
+          onClick={(e) => {
+            if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+              e.preventDefault();
+              onNavigateGuides();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          }}
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-sm border border-slate-200 dark:border-slate-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <BookOpen className="w-4 h-4" />
           <span>Browse Privacy Guides</span>
-        </button>
+        </a>
       </div>
 
       {/* Additional Help Context */}

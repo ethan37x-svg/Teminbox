@@ -171,13 +171,20 @@ export const DisclaimerSection: React.FC<{ onNavigateToTerms?: () => void }> = (
 
           <div className="flex items-center gap-3 shrink-0">
             {onNavigateToTerms && (
-              <button
-                onClick={onNavigateToTerms}
+              <a
+                href="/terms"
+                onClick={(e) => {
+                  if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+                    e.preventDefault();
+                    onNavigateToTerms();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }
+                }}
                 className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition flex items-center gap-2 shadow"
               >
                 <FileText className="w-4 h-4" />
                 <span>View Full Terms & Privacy</span>
-              </button>
+              </a>
             )}
           </div>
         </div>

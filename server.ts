@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
+import { injectSeoIntoHtml } from './src/seo/staticRoutes';
 
 // Ensure HMR is disabled in AI Studio dev server to avoid WebSocket connection errors
 process.env.DISABLE_HMR = 'true';
@@ -180,6 +181,14 @@ app.get('/sitemap.xml', (req, res) => {
     return res.sendFile(distPath);
   }
   res.status(404).send('Sitemap not found');
+});
+
+// Legacy SEO Routing: 301 Permanent Redirects consolidating /blog into canonical /guides
+app.get('/blog', (req, res) => {
+  res.redirect(301, '/guides');
+});
+app.get('/blog/:slug', (req, res) => {
+  res.redirect(301, `/guides/${encodeURIComponent(req.params.slug)}`);
 });
 
 // Privacy Safeguard: Prevent search engines from indexing dynamic API or private mailbox responses
@@ -546,16 +555,80 @@ async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true, hmr: false },
-      appType: 'spa',
+      appType: 'custom',
     });
+
+    // Handle HTML page requests with complete route-specific SEO and prerendered semantic HTML
+    app.get('*', async (req, res, next) => {
+      // Pass asset and API requests through to Vite / static middlewares
+      if (
+        req.path.startsWith('/api') ||
+        req.path.includes('.') ||
+        req.path.startsWith('/@') ||
+        req.path.startsWith('/src/') ||
+        req.path.startsWith('/node_modules/')
+      ) {
+        return next();
+      }
+
+      try {
+        const templatePath = path.join(process.cwd(), 'index.html');
+        const rawTemplate = fs.readFileSync(templatePath, 'utf-8');
+        const seoHtml = injectSeoIntoHtml(rawTemplate, req.path);
+        const transformedHtml = await vite.transformIndexHtml(req.originalUrl, seoHtml);
+        const is404 = req.path === '/404';
+        return res
+          .status(is404 ? 404 : 200)
+          .set({ 'Content-Type': 'text/html; charset=utf-8' })
+          .send(transformedHtml);
+      } catch (err) {
+        next(err);
+      }
+    });
+
     app.use(vite.middlewares);
   } else {
     const distPath = fs.existsSync(path.join(__dirname, 'dist'))
       ? path.join(__dirname, 'dist')
       : (fs.existsSync(path.join(process.cwd(), 'dist')) ? path.join(process.cwd(), 'dist') : __dirname);
-    app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+
+    // Serve static assets without index.html fallback
+    app.use(express.static(distPath, { index: false }));
+
+    // Route handler for HTML requests in production
+    app.get('*', (req, res, next) => {
+      if (req.path.startsWith('/api')) {
+        return next();
+      }
+
+      const cleanPath = req.path.split('?')[0].replace(/^\/+/, '').replace(/\/+$/, '');
+
+      // 1. Check direct prerendered directory index (e.g. dist/about/index.html)
+      const directIndexPath = path.join(distPath, cleanPath, 'index.html');
+      if (cleanPath && fs.existsSync(directIndexPath)) {
+        return res.sendFile(directIndexPath);
+      }
+
+      // 2. Check prerendered file (e.g. dist/404.html)
+      const directHtmlPath = path.join(distPath, `${cleanPath}.html`);
+      if (cleanPath && fs.existsSync(directHtmlPath)) {
+        return res.sendFile(directHtmlPath);
+      }
+
+      // 3. Homepage (dist/index.html)
+      const baseIndexPath = path.join(distPath, 'index.html');
+      if (!cleanPath || cleanPath === '') {
+        return res.sendFile(baseIndexPath);
+      }
+
+      // 4. Dynamic fallback: inject SEO into base index.html
+      if (fs.existsSync(baseIndexPath)) {
+        const rawIndex = fs.readFileSync(baseIndexPath, 'utf-8');
+        const seoHtml = injectSeoIntoHtml(rawIndex, req.path);
+        return res.status(200).set({ 'Content-Type': 'text/html; charset=utf-8' }).send(seoHtml);
+      }
+
+      res.status(404).send('Not Found');
     });
   }
 

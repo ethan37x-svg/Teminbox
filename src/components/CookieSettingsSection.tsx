@@ -29,7 +29,7 @@ export const CookieSettingsSection: React.FC<CookieSettingsSectionProps> = ({
       setReopenFeedback('Launching certified CMP settings dialog...');
       setTimeout(() => setReopenFeedback(null), 4000);
     } else {
-      setReopenFeedback('No certified CMP script loaded yet. Site is running in default Zero-Tracking mode.');
+      setReopenFeedback('Certified CMP integration is prepared in codebase and will be activated via Google AdSense Privacy & Messaging. Currently operating in Consent Mode v2 default-denied mode.');
       setTimeout(() => setReopenFeedback(null), 6000);
     }
   };
@@ -47,12 +47,12 @@ export const CookieSettingsSection: React.FC<CookieSettingsSectionProps> = ({
               <Shield className="w-3.5 h-3.5 text-blue-400" />
               Privacy & Consent Architecture
             </span>
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              Google Certified CMP Ready
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30 flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
+              Google Certified CMP Prepared
             </span>
             <span className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
-              Zero-Tracking by Default
+              Default-Denied Consent Mode v2
             </span>
           </div>
 
@@ -62,7 +62,7 @@ export const CookieSettingsSection: React.FC<CookieSettingsSectionProps> = ({
           </h1>
 
           <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-            TempInbox is built on strict data minimization. We do not use tracking cookies or advertising profiles by default. Review our certified Consent Management Platform (CMP) integration, Google Consent Mode v2 defaults, and external opt-out choices below.
+            TempInbox enforces data minimization: the temporary email generator operates without first-party tracking cookies. Review our Google Consent Mode v2 defaults, planned certified Consent Management Platform (CMP) integration via AdSense Privacy & Messaging, and third-party advertising opt-out choices below.
           </p>
         </div>
       </div>
@@ -74,15 +74,15 @@ export const CookieSettingsSection: React.FC<CookieSettingsSectionProps> = ({
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-100 dark:border-slate-800 pb-6">
             <div className="space-y-2">
               <div className="flex items-center gap-2.5">
-                <div className={`w-3 h-3 rounded-full ${cmpActive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></div>
+                <div className={`w-3 h-3 rounded-full ${cmpActive ? 'bg-emerald-500 animate-pulse' : 'bg-blue-500'}`}></div>
                 <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
-                  {cmpActive ? 'Google-Certified CMP Active' : 'CMP Integration Bridge: Ready & Standby'}
+                  {cmpActive ? 'Google-Certified CMP Active' : 'CMP Integration Architecture: Prepared & Staged'}
                 </h2>
               </div>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
                 {cmpActive 
                   ? 'A certified Consent Management Platform is actively governing advertising and analytics consent according to IAB Europe TCF v2.2 specifications.'
-                  : 'TempInbox does not simulate legal consent with fake custom banners. In compliance with Google requirements for the EEA, UK, and Switzerland, advertising consent will be managed exclusively by a Google-certified CMP upon AdSense activation.'}
+                  : 'TempInbox does not simulate legal consent with fake custom banners. In compliance with Google requirements for the EEA, UK, and Switzerland, advertising consent will be managed by a Google-certified CMP configured via Google AdSense Privacy & Messaging. Prior to activation, all advertising cookies remain default denied.'}
               </p>
             </div>
 
@@ -93,7 +93,7 @@ export const CookieSettingsSection: React.FC<CookieSettingsSectionProps> = ({
                 className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <Layers className="w-4 h-4" />
-                <span>Reopen CMP Settings</span>
+                <span>Manage CMP Settings</span>
               </button>
             </div>
           </div>
@@ -109,14 +109,14 @@ export const CookieSettingsSection: React.FC<CookieSettingsSectionProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
             <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 space-y-2.5">
-              <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+              <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
                 1
               </div>
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                Zero Tracking by Default
+                Default-Denied Consent Mode v2
               </h3>
               <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Google Consent Mode v2 is hardcoded to default <code>denied</code> for all ad storage, personalization, and analytics prior to explicit user consent.
+                Google Consent Mode v2 is hardcoded to default <code>denied</code> for advertising storage, ad personalization, and analytics prior to explicit user consent.
               </p>
             </div>
 
@@ -340,13 +340,20 @@ export const CookieSettingsSection: React.FC<CookieSettingsSectionProps> = ({
         {/* Footer Navigation Link */}
         <div className="text-center pt-2">
           {onNavigateToPrivacy && (
-            <button
-              onClick={onNavigateToPrivacy}
+            <a
+              href="/privacy"
+              onClick={(e) => {
+                if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+                  e.preventDefault();
+                  onNavigateToPrivacy();
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }}
               className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
             >
               <span>Review Complete Privacy Policy & Data Processing Disclosures</span>
               <ChevronRight className="w-3.5 h-3.5" />
-            </button>
+            </a>
           )}
         </div>
 

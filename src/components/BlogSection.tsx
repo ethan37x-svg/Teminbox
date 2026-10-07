@@ -110,29 +110,37 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ initialSlug, onSlugCha
         <nav aria-label="Breadcrumb" className="mb-6">
           <ol className="flex items-center gap-2 text-xs text-slate-500 list-none p-0 m-0">
             <li className="flex items-center gap-2">
-              <button 
-                type="button"
-                onClick={() => {
-                  window.history.pushState(null, '', '/');
-                  window.dispatchEvent(new PopStateEvent('popstate'));
+              <a 
+                href="/"
+                onClick={(e) => {
+                  if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+                    e.preventDefault();
+                    window.history.pushState(null, '', '/');
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }
                 }} 
                 className="hover:text-blue-600 font-semibold focus:outline-none focus:ring-1 focus:ring-blue-500 rounded"
               >
                 Home
-              </button>
+              </a>
               <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             </li>
             <li className="flex items-center gap-2">
-              <button 
-                type="button"
-                onClick={() => {
-                  setSelectedArticle(null);
-                  onSlugChange?.(null);
+              <a 
+                href="/guides"
+                onClick={(e) => {
+                  if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+                    e.preventDefault();
+                    setSelectedArticle(null);
+                    onSlugChange?.(null);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }
                 }} 
                 className="hover:text-blue-600 font-semibold focus:outline-none focus:ring-1 focus:ring-blue-500 rounded"
               >
                 Guides
-              </button>
+              </a>
               <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             </li>
             <li aria-current="page" className="truncate text-slate-800 dark:text-slate-300 font-medium max-w-sm sm:max-w-md">
@@ -142,16 +150,21 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ initialSlug, onSlugCha
         </nav>
 
         {/* Back Button */}
-        <button
-          onClick={() => {
-            setSelectedArticle(null);
-            onSlugChange?.(null);
+        <a
+          href="/guides"
+          onClick={(e) => {
+            if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+              e.preventDefault();
+              setSelectedArticle(null);
+              onSlugChange?.(null);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
           }}
           className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to All Guides</span>
-        </button>
+        </a>
 
         {/* Article Header */}
         <div className="mb-8">
@@ -400,6 +413,44 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ initialSlug, onSlugCha
           ))}
         </div>
 
+        {/* Semantic Related Guides for Crawler Interlinking */}
+        <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-blue-600" />
+            <span>Related Technical & Privacy Guides</span>
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {blogArticles
+              .filter((a) => a.slug !== selectedArticle.slug)
+              .slice(0, 4)
+              .map((related) => (
+                <a
+                  key={related.id}
+                  href={`/guides/${related.slug}`}
+                  onClick={(e) => {
+                    if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+                      e.preventDefault();
+                      setSelectedArticle(related);
+                      onSlugChange?.(related.slug);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                  }}
+                  className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-blue-500 transition group block"
+                >
+                  <div className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">
+                    {related.category}
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition line-clamp-1">
+                    {related.title}
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
+                    {related.description}
+                  </p>
+                </a>
+              ))}
+          </div>
+        </div>
+
       </div>
     );
   }
@@ -462,13 +513,18 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ initialSlug, onSlugCha
       {/* Articles Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredArticles.map((article) => (
-          <article
+          <a
             key={article.id}
-            onClick={() => {
-              setSelectedArticle(article);
-              onSlugChange?.(article.slug);
+            href={`/guides/${article.slug}`}
+            onClick={(e) => {
+              if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+                e.preventDefault();
+                setSelectedArticle(article);
+                onSlugChange?.(article.slug);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
             }}
-            className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between overflow-hidden group"
+            className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between overflow-hidden group no-underline text-inherit"
           >
             {article.imageUrl && (
               <div className="h-48 overflow-hidden bg-slate-100 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-700/60 relative">
@@ -527,7 +583,7 @@ export const BlogSection: React.FC<BlogSectionProps> = ({ initialSlug, onSlugCha
                 <ChevronRight className="w-3.5 h-3.5" />
               </span>
             </div>
-          </article>
+          </a>
         ))}
       </div>
 

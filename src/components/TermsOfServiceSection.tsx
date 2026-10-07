@@ -229,40 +229,64 @@ export const TermsOfServiceSection: React.FC<TermsOfServiceSectionProps> = ({ on
       {/* Footer Navigation Back to Generator */}
       <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4">
         {onNavigateTab && (
-          <button
-            type="button"
-            onClick={() => onNavigateTab('inbox')}
+          <a
+            href="/"
+            onClick={(e) => {
+              if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+                e.preventDefault();
+                onNavigateTab('inbox');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm transition shadow-xs"
           >
             <FileText className="w-4 h-4" />
             <span>Return to Temporary Inbox Tool</span>
-          </button>
+          </a>
         )}
         {onNavigateTab && (
           <div className="flex items-center gap-4 text-xs font-semibold text-slate-500 dark:text-slate-400">
-            <button
-              type="button"
-              onClick={() => onNavigateTab('about')}
+            <a
+              href="/about"
+              onClick={(e) => {
+                if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+                  e.preventDefault();
+                  onNavigateTab('about');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }}
               className="hover:text-blue-600 dark:hover:text-blue-400 transition"
             >
               About TempInbox
-            </button>
+            </a>
             <span>•</span>
-            <button
-              type="button"
-              onClick={() => onNavigateTab('contact')}
+            <a
+              href="/contact"
+              onClick={(e) => {
+                if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+                  e.preventDefault();
+                  onNavigateTab('contact');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }}
               className="hover:text-blue-600 dark:hover:text-blue-400 transition"
             >
               Contact Support
-            </button>
+            </a>
             <span>•</span>
-            <button
-              type="button"
-              onClick={() => onNavigateTab('privacy')}
+            <a
+              href="/privacy"
+              onClick={(e) => {
+                if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+                  e.preventDefault();
+                  onNavigateTab('privacy');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }}
               className="hover:text-blue-600 dark:hover:text-blue-400 transition"
             >
               Privacy Policy
-            </button>
+            </a>
           </div>
         )}
       </div>

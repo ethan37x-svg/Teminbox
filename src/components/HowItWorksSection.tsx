@@ -27,22 +27,34 @@ export const HowItWorksSection: React.FC<HowItWorksSectionProps> = ({ onNavigate
 
         {/* Primary CTA */}
         <div className="mt-6 flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={() => onNavigateTab('inbox')}
+          <a
+            href="/"
+            onClick={(e) => {
+              if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+                e.preventDefault();
+                onNavigateTab('inbox');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm transition shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             <Mail className="w-4 h-4" />
             <span>Generate Temporary Email</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => onNavigateTab('blog')}
+          </a>
+          <a
+            href="/guides"
+            onClick={(e) => {
+              if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+                e.preventDefault();
+                onNavigateTab('blog');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-xs sm:text-sm transition focus:outline-none focus:ring-2 focus:ring-slate-400"
           >
             <span>Read Technical Guides</span>
             <ArrowRight className="w-4 h-4" />
-          </button>
+          </a>
         </div>
       </header>
 
@@ -171,13 +183,19 @@ export const HowItWorksSection: React.FC<HowItWorksSectionProps> = ({ onNavigate
             Create an instant address in seconds. Free, private, and zero registration.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => onNavigateTab('inbox')}
+        <a
+          href="/"
+          onClick={(e) => {
+            if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+              e.preventDefault();
+              onNavigateTab('inbox');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          }}
           className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm rounded-xl transition shadow-lg shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-400"
         >
           Open Temporary Inbox
-        </button>
+        </a>
       </div>
 
     </article>

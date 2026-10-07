@@ -41,14 +41,59 @@ export const PrivacyPolicySection: React.FC<PrivacyPolicySectionProps> = ({
       {/* Main Policy Body */}
       <div className="space-y-12 text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
         
-        {/* Section 1: Data Collected & Processed */}
-        <section aria-labelledby="section-data-collected" className="space-y-4">
-          <h2 id="section-data-collected" className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
+        {/* Section 1: Data Processing Structure Overview */}
+        <section aria-labelledby="section-processing-distinction" className="space-y-4">
+          <h2 id="section-processing-distinction" className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
             <span className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs font-bold">1</span>
-            <span>Data Collected & Processed</span>
+            <span>Data Processing Categories & Clear Distinctions</span>
           </h2>
           <p>
-            TempInbox operates as an on-demand, inbound-only disposable email utility. We do not require user accounts, passwords, personal names, physical addresses, or payment information. The specific categories of data processed by the application comprise:
+            To provide complete transparency and comply with applicable data protection regulations, TempInbox clearly distinguishes between four separate tiers of data processing across our service:
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+              <h3 className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm mb-1 text-blue-600 dark:text-blue-400">
+                1. Data Processed Directly by TempInbox
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Temporary email address strings, incoming email headers, message text/HTML payloads, and temporary attachments held exclusively in volatile RAM. <strong>TempInbox does not sell personal data.</strong>
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+              <h3 className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm mb-1 text-amber-600 dark:text-amber-400">
+                2. Necessary Infrastructure & Security Logging
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Network connection metadata (such as IP addresses, timestamps, and request URIs) processed by hosting infrastructure, reverse proxies, and CDN edge firewalls strictly for DDoS protection, rate limiting, and security defense.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+              <h3 className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm mb-1 text-purple-600 dark:text-purple-400">
+                3. Optional Analytics (If Any)
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                TempInbox does not utilize proprietary behavioral tracking scripts. Any optional analytics tools are consent-gated under Google Consent Mode v2 and remain denied unless explicitly granted.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+              <h3 className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm mb-1 text-emerald-600 dark:text-emerald-400">
+                4. Third-Party Advertising & Google AdSense
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Third-party advertising partners, including Google, may process advertising identifiers and cookies on editorial pages for ad serving, measurement, fraud prevention, and personalization where permitted.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 2: Data Collected & Processed */}
+        <section aria-labelledby="section-data-collected" className="space-y-4">
+          <h2 id="section-data-collected" className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
+            <span className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs font-bold">2</span>
+            <span>Data Collected by the TempInbox Application</span>
+          </h2>
+          <p>
+            TempInbox operates as an on-demand, inbound-only disposable email utility. We do not require user accounts, passwords, personal names, physical addresses, or payment cards. The specific categories of data processed by the core tool comprise:
           </p>
           <ul className="list-disc pl-5 space-y-2 text-xs sm:text-sm">
             <li>
@@ -62,9 +107,6 @@ export const PrivacyPolicySection: React.FC<PrivacyPolicySectionProps> = ({
             </li>
             <li>
               <strong>Client-Side UI Preferences:</strong> User-selected interface preferences stored in your browser's local storage (such as consent categories).
-            </li>
-            <li>
-              <strong>Transient Network Headers:</strong> Standard network connection metadata (including remote IP address and user-agent string) transmitted across standard TCP/IP sockets during web HTTP requests. The application software does not record these into persistent databases or access log files.
             </li>
           </ul>
         </section>
@@ -210,14 +252,20 @@ export const PrivacyPolicySection: React.FC<PrivacyPolicySectionProps> = ({
             <span>Advertising Disclosure & Google AdSense</span>
           </div>
           <h2 id="section-advertising" className="text-xl font-bold text-slate-900 dark:text-white">
-            Future Advertising & Third-Party Vendor Technologies
+            Third-Party Advertising Providers & Google AdSense Data Processing
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-            TempInbox is supported by advertising to maintain high-availability edge infrastructure, domain renewals, and inbound mail gateways. On eligible informational and educational pages (such as our Guides section), third-party vendors, including Google, may serve contextual advertisements.
+            TempInbox is supported by advertising to maintain high-availability edge infrastructure, domain renewals, and inbound mail gateways. On eligible informational and educational pages (such as our Guides section), third-party vendors, including Google, may serve advertisements.
           </p>
-          <div className="space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+          <div className="space-y-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
             <p>
-              <strong>Use of Cookies & Web Beacons:</strong> Third-party advertising vendors, including Google, use cookies or similar tracking identifiers to serve ads based on a user's prior visits to this website or other websites on the Internet. Google's use of advertising cookies enables it and its partners to serve ads to users based on their visits to TempInbox and/or other sites.
+              <strong>Third-Party Vendor Processing:</strong> Third-party advertising providers, such as Google, may use cookies, web beacons, or similar technologies and process identifiers and device data in connection with ad serving, ad performance measurement, fraud and invalid traffic prevention, and ad personalization where applicable and consented by the user.
+            </p>
+            <p>
+              <strong>No Sale of Personal Data:</strong> TempInbox itself does not sell personal information or commercialize user data. All mailbox sessions and incoming email payloads are stored solely in volatile RAM and automatically purged.
+            </p>
+            <p>
+              <strong>Consent Management Integration:</strong> Staged in our codebase are technical hooks for Google Consent Mode v2 and IAB Europe TCF v2.2 compliance. Formal certified CMP consent collection will be activated via Google AdSense Privacy & Messaging. Prior to explicit consent, default settings enforce denied status for advertising cookies.
             </p>
             <p>
               <strong>Managing Advertising Preferences:</strong> Users may opt out of personalized advertising by visiting Google's Ad Settings at{' '}
@@ -326,32 +374,50 @@ export const PrivacyPolicySection: React.FC<PrivacyPolicySectionProps> = ({
       {/* Footer Navigation Back to Generator */}
       <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4">
         {onNavigateTab && (
-          <button
-            type="button"
-            onClick={() => onNavigateTab('inbox')}
+          <a
+            href="/"
+            onClick={(e) => {
+              if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+                e.preventDefault();
+                onNavigateTab('inbox');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm transition shadow-xs"
           >
             <Mail className="w-4 h-4" />
             <span>Return to Temporary Inbox Tool</span>
-          </button>
+          </a>
         )}
         {onNavigateTab && (
           <div className="flex items-center gap-4 text-xs font-semibold text-slate-500 dark:text-slate-400">
-            <button
-              type="button"
-              onClick={() => onNavigateTab('terms')}
+            <a
+              href="/terms"
+              onClick={(e) => {
+                if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+                  e.preventDefault();
+                  onNavigateTab('terms');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }}
               className="hover:text-blue-600 dark:hover:text-blue-400 transition"
             >
               Terms of Service
-            </button>
+            </a>
             <span>•</span>
-            <button
-              type="button"
-              onClick={() => onNavigateTab('cookies')}
+            <a
+              href="/cookies"
+              onClick={(e) => {
+                if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+                  e.preventDefault();
+                  onNavigateTab('cookies');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }}
               className="hover:text-blue-600 dark:hover:text-blue-400 transition"
             >
               Cookie Settings
-            </button>
+            </a>
           </div>
         )}
       </div>

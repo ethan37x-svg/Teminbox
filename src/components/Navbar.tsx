@@ -38,9 +38,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleNavClick = (tab: Parameters<typeof onSelectTab>[0]) => {
-    onSelectTab(tab);
-    setMobileMenuOpen(false);
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, tab: Parameters<typeof onSelectTab>[0]) => {
+    if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0) {
+      e.preventDefault();
+      onSelectTab(tab);
+      setMobileMenuOpen(false);
+    }
   };
 
   return (
@@ -48,9 +51,9 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         
         {/* Brand / Home Link */}
-        <button
-          type="button"
-          onClick={() => handleNavClick('inbox')}
+        <a
+          href="/"
+          onClick={(e) => handleLinkClick(e, 'inbox')}
           aria-label="TempInbox Home"
           className="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-xl p-1 -ml-1 transition"
         >
@@ -60,13 +63,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">
             Temp<span className="text-blue-600 dark:text-blue-400">Inbox</span>
           </span>
-        </button>
+        </a>
 
         {/* Desktop Navigation Links */}
         <nav aria-label="Main Navigation" className="hidden md:flex items-center gap-8 text-sm font-semibold">
-          <button
-            type="button"
-            onClick={() => handleNavClick('blog')}
+          <a
+            href="/guides"
+            onClick={(e) => handleLinkClick(e, 'blog')}
             className={`py-1 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md px-1 ${
               activeTab === 'blog'
                 ? 'text-blue-600 dark:text-blue-400 font-bold border-b-2 border-blue-600 dark:border-blue-400'
@@ -74,11 +77,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             Guides
-          </button>
+          </a>
 
-          <button
-            type="button"
-            onClick={() => handleNavClick('how-it-works')}
+          <a
+            href="/how-it-works"
+            onClick={(e) => handleLinkClick(e, 'how-it-works')}
             className={`py-1 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md px-1 ${
               activeTab === 'how-it-works'
                 ? 'text-blue-600 dark:text-blue-400 font-bold border-b-2 border-blue-600 dark:border-blue-400'
@@ -86,11 +89,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             How It Works
-          </button>
+          </a>
 
-          <button
-            type="button"
-            onClick={() => handleNavClick('about')}
+          <a
+            href="/about"
+            onClick={(e) => handleLinkClick(e, 'about')}
             className={`py-1 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md px-1 ${
               activeTab === 'about'
                 ? 'text-blue-600 dark:text-blue-400 font-bold border-b-2 border-blue-600 dark:border-blue-400'
@@ -98,16 +101,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             About
-          </button>
+          </a>
         </nav>
 
         {/* Desktop Right Controls: Primary CTA + Utility Buttons */}
         <div className="hidden md:flex items-center gap-3">
           
           {/* Primary CTA: Temporary Email Tool */}
-          <button
-            type="button"
-            onClick={() => handleNavClick('inbox')}
+          <a
+            href="/"
+            onClick={(e) => handleLinkClick(e, 'inbox')}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-xs transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             <Mail className="w-4 h-4" />
@@ -117,7 +120,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {unreadCount}
               </span>
             )}
-          </button>
+          </a>
 
           {/* Vertical Divider */}
           <div className="h-6 w-px bg-slate-200 dark:border-slate-800"></div>
@@ -177,9 +180,9 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Mobile Hamburger & Actions */}
         <div className="flex md:hidden items-center gap-2">
           {/* Mobile Primary CTA */}
-          <button
-            type="button"
-            onClick={() => handleNavClick('inbox')}
+          <a
+            href="/"
+            onClick={(e) => handleLinkClick(e, 'inbox')}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition"
           >
             <Mail className="w-3.5 h-3.5" />
@@ -189,7 +192,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {unreadCount}
               </span>
             )}
-          </button>
+          </a>
 
           {/* Mobile Menu Toggle Button */}
           <button
@@ -210,9 +213,9 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-4 space-y-3 animate-fadeIn shadow-lg">
           
           <nav aria-label="Mobile Navigation" className="flex flex-col space-y-1">
-            <button
-              type="button"
-              onClick={() => handleNavClick('inbox')}
+            <a
+              href="/"
+              onClick={(e) => handleLinkClick(e, 'inbox')}
               className={`w-full text-left px-3 py-2.5 rounded-xl font-bold text-sm flex items-center justify-between ${
                 activeTab === 'inbox'
                   ? 'bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400'
@@ -224,11 +227,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span>Temporary Email Tool</span>
               </span>
               <ArrowRight className="w-4 h-4 text-slate-400" />
-            </button>
+            </a>
 
-            <button
-              type="button"
-              onClick={() => handleNavClick('blog')}
+            <a
+              href="/guides"
+              onClick={(e) => handleLinkClick(e, 'blog')}
               className={`w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm flex items-center justify-between ${
                 activeTab === 'blog'
                   ? 'bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400'
@@ -240,11 +243,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span>Guides</span>
               </span>
               <ArrowRight className="w-4 h-4 text-slate-400" />
-            </button>
+            </a>
 
-            <button
-              type="button"
-              onClick={() => handleNavClick('how-it-works')}
+            <a
+              href="/how-it-works"
+              onClick={(e) => handleLinkClick(e, 'how-it-works')}
               className={`w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm flex items-center justify-between ${
                 activeTab === 'how-it-works'
                   ? 'bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400'
@@ -256,11 +259,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span>How It Works</span>
               </span>
               <ArrowRight className="w-4 h-4 text-slate-400" />
-            </button>
+            </a>
 
-            <button
-              type="button"
-              onClick={() => handleNavClick('about')}
+            <a
+              href="/about"
+              onClick={(e) => handleLinkClick(e, 'about')}
               className={`w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm flex items-center justify-between ${
                 activeTab === 'about'
                   ? 'bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400'
@@ -272,7 +275,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span>About</span>
               </span>
               <ArrowRight className="w-4 h-4 text-slate-400" />
-            </button>
+            </a>
           </nav>
 
           {/* Mobile Utilities (Language & Theme) */}

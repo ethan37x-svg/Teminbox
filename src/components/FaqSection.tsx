@@ -144,7 +144,7 @@ export const FaqSection: React.FC = () => {
       {/* Footer Support Notice */}
       <div className="mt-8 text-center text-xs text-slate-500 dark:text-slate-400 flex items-center justify-center gap-1.5">
         <ShieldCheck className="w-4 h-4 text-emerald-500" />
-        <span>Need further technical clarification? Contact our engineering team at <a href="mailto:support@tempinbox.org" className="text-blue-600 dark:text-blue-400 underline font-bold">support@tempinbox.org</a></span>
+        <span>Need further technical clarification? Contact our engineering team at <a href="mailto:support@tempinbox.solutions" className="text-blue-600 dark:text-blue-400 underline font-bold">support@tempinbox.solutions</a></span>
       </div>
 
     </div>
