@@ -119,9 +119,9 @@ Once your domain is submitted to Google AdSense:
 In `index.html`, locate the documented placeholder:
 
 ```html
-<!-- Replace with your actual AdSense publisher ID -->
-<meta name="google-adsense-account" content="ca-pub-XXXXXXXXXXXXXXXX" />
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+<meta name="google-adsense-account" content="ca-pub-3405323116813893" />
+<!-- When display ads are approved, add client parameter: -->
+<!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3405323116813893" crossorigin="anonymous"></script> -->
 ```
 
 Google AdSense will automatically serve the certified CMP modal to users from the EEA, UK, and Switzerland upon page load.

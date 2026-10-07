@@ -59,7 +59,7 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
               style={{ display: 'block', textAlign: 'center' }}
               data-ad-layout="in-article"
               data-ad-format="fluid"
-              data-ad-client="ca-pub-0000000000000000"
+              data-ad-client="ca-pub-3405323116813893"
               data-ad-slot={slotId}
             />
             <div className="text-center py-2">
@@ -98,7 +98,7 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
           <ins
             className="adsbygoogle"
             style={{ display: 'block' }}
-            data-ad-client="ca-pub-0000000000000000"
+            data-ad-client="ca-pub-3405323116813893"
             data-ad-slot={slotId}
             data-ad-format="rectangle"
           />
@@ -138,7 +138,7 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
               style={{ display: 'block', textAlign: 'center' }}
               data-ad-layout="in-article"
               data-ad-format="fluid"
-              data-ad-client="ca-pub-0000000000000000"
+              data-ad-client="ca-pub-3405323116813893"
               data-ad-slot={slotId}
             />
             <div className="text-center py-2">

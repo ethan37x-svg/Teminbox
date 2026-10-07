@@ -154,7 +154,7 @@ app.get('/ads.txt', (req, res) => {
     res.setHeader('Content-Type', 'text/plain; charset=UTF-8');
     return res.sendFile(distPath);
   }
-  res.type('text/plain').send('google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0\n');
+  res.type('text/plain').send('google.com, pub-3405323116813893, DIRECT, f08c47fec0942fa0\n');
 });
 
 // Search Engine Optimization: robots.txt
