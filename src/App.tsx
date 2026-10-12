@@ -11,6 +11,7 @@ import { isAdEligiblePage } from './config/adEligibility';
 import { blogArticles } from './data/blogArticles';
 import { initCmpListeners, reopenCmpSettings } from './utils/cmpIntegration';
 import { updateDocumentSeo } from './utils/seoManager';
+import { getAllStaticPages } from './seo/staticRoutes';
 
 // Lazy-loaded routes and modals to split non-critical JavaScript chunks
 const BlogSection = lazy(() => import('./components/BlogSection').then((m) => ({ default: m.BlogSection })));
@@ -39,12 +40,79 @@ const RouteLoadingFallback = () => (
   </div>
 );
 
+/**
+ * Pure route parser from window.location.pathname.
+ * Ensures the very first React render matches the requested URL without a flash of the inbox.
+ */
+function parseRouteFromLocation(): {
+  tab: NavigationTab;
+  guideSlug: string | null;
+  notFoundPath: string;
+} {
+  if (typeof window === 'undefined') {
+    return { tab: 'inbox', guideSlug: null, notFoundPath: '' };
+  }
+  const cleanPath = window.location.pathname.replace(/^\/+/, '').replace(/\/+$/, '');
+  if (!cleanPath) {
+    return { tab: 'inbox', guideSlug: null, notFoundPath: '' };
+  }
+  if (cleanPath.startsWith('guides/') || cleanPath.startsWith('blog/')) {
+    const slug = cleanPath.split('/')[1] || null;
+    if (slug) {
+      const articleExists = blogArticles.some((a) => a.slug === slug);
+      if (articleExists) {
+        return { tab: 'blog', guideSlug: slug, notFoundPath: '' };
+      }
+      return { tab: '404', guideSlug: null, notFoundPath: window.location.pathname };
+    }
+    return { tab: 'blog', guideSlug: null, notFoundPath: '' };
+  }
+  if (cleanPath === 'guides' || cleanPath === 'blog') {
+    return { tab: 'blog', guideSlug: null, notFoundPath: '' };
+  }
+  const directTabs: Record<string, NavigationTab> = {
+    'how-it-works': 'how-it-works',
+    about: 'about',
+    contact: 'contact',
+    faq: 'faq',
+    terms: 'terms',
+    privacy: 'privacy',
+    cookies: 'cookies',
+    api: 'api',
+    disclaimer: 'disclaimer',
+    audit: 'audit',
+    admin: 'admin',
+    '404': '404',
+  };
+  if (directTabs[cleanPath]) {
+    return { tab: directTabs[cleanPath], guideSlug: null, notFoundPath: cleanPath === '404' ? window.location.pathname : '' };
+  }
+  return { tab: '404', guideSlug: null, notFoundPath: window.location.pathname };
+}
+
+const tabToCanonicalPathMap: Record<NavigationTab, string> = {
+  inbox: '/',
+  blog: '/guides',
+  'how-it-works': '/how-it-works',
+  about: '/about',
+  contact: '/contact',
+  faq: '/faq',
+  terms: '/terms',
+  privacy: '/privacy',
+  cookies: '/cookies',
+  api: '/api',
+  disclaimer: '/disclaimer',
+  audit: '/audit',
+  admin: '/admin',
+  '404': '/404',
+};
+
 export default function App() {
   const [currentLang, setCurrentLang] = useState<SupportedLanguage>('en');
   const [darkMode, setDarkMode] = useState(false);
-  const [activeTab, setActiveTab] = useState<NavigationTab>('inbox');
-  const [activeGuideSlug, setActiveGuideSlug] = useState<string | null>(null);
-  const [attemptedNotFoundPath, setAttemptedNotFoundPath] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<NavigationTab>(() => parseRouteFromLocation().tab);
+  const [activeGuideSlug, setActiveGuideSlug] = useState<string | null>(() => parseRouteFromLocation().guideSlug);
+  const [attemptedNotFoundPath, setAttemptedNotFoundPath] = useState<string>(() => parseRouteFromLocation().notFoundPath);
 
   const [mailbox, setMailbox] = useState<Mailbox | null>(null);
   const [messages, setMessages] = useState<EmailMessage[]>([]);
@@ -68,106 +136,26 @@ export default function App() {
     }
   }, [darkMode]);
 
-  // Synchronize browser history and route on initial load & popstate
+  // Synchronize browser history and route on popstate
   useEffect(() => {
-    const syncRouteFromLocation = () => {
-      const path = window.location.pathname.replace(/^\/+/, '').replace(/\/+$/, '');
-      if (path === '' || path === '/') {
-        setActiveTab('inbox');
-        setActiveGuideSlug(null);
-      } else if (path.startsWith('guides/') || path.startsWith('blog/')) {
-        const slug = path.split('/')[1] || null;
-        if (slug) {
-          const articleExists = blogArticles.some((a) => a.slug === slug);
-          if (articleExists) {
-            setActiveTab('blog');
-            setActiveGuideSlug(slug);
-          } else {
-            setActiveTab('404');
-            setActiveGuideSlug(null);
-            setAttemptedNotFoundPath(window.location.pathname);
-          }
-        } else {
-          setActiveTab('blog');
-          setActiveGuideSlug(null);
-        }
-      } else if (path === 'guides' || path === 'blog') {
-        setActiveTab('blog');
-        setActiveGuideSlug(null);
-      } else if (path === 'how-it-works') {
-        setActiveTab('how-it-works');
-        setActiveGuideSlug(null);
-      } else if (path === 'about') {
-        setActiveTab('about');
-        setActiveGuideSlug(null);
-      } else if (path === 'contact') {
-        setActiveTab('contact');
-        setActiveGuideSlug(null);
-      } else if (path === 'faq') {
-        setActiveTab('faq');
-        setActiveGuideSlug(null);
-      } else if (path === 'terms') {
-        setActiveTab('terms');
-        setActiveGuideSlug(null);
-      } else if (path === 'privacy') {
-        setActiveTab('privacy');
-        setActiveGuideSlug(null);
-      } else if (path === 'cookies') {
-        setActiveTab('cookies');
-        setActiveGuideSlug(null);
-      } else if (path === 'api') {
-        setActiveTab('api');
-        setActiveGuideSlug(null);
-      } else if (path === 'disclaimer') {
-        setActiveTab('disclaimer');
-        setActiveGuideSlug(null);
-      } else if (path === 'audit') {
-        setActiveTab('audit');
-        setActiveGuideSlug(null);
-      } else if (path === 'admin') {
-        setActiveTab('admin');
-        setActiveGuideSlug(null);
-      } else {
-        setActiveTab('404');
-        setActiveGuideSlug(null);
-        setAttemptedNotFoundPath(window.location.pathname);
-      }
+    const handlePopState = () => {
+      const route = parseRouteFromLocation();
+      setActiveTab(route.tab);
+      setActiveGuideSlug(route.guideSlug);
+      setAttemptedNotFoundPath(route.notFoundPath);
     };
 
-    syncRouteFromLocation();
-    window.addEventListener('popstate', syncRouteFromLocation);
-    return () => window.removeEventListener('popstate', syncRouteFromLocation);
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   // Handle Tab Navigation with URL sync (memoized to prevent child re-renders)
   const handleSelectTab = useCallback((tab: NavigationTab) => {
     setActiveTab(tab);
-    if (tab === 'blog') {
-      setActiveGuideSlug(null);
-      if (window.location.pathname !== '/guides') {
-        window.history.pushState(null, '', '/guides');
-      }
-    } else {
-      setActiveGuideSlug(null);
-      const tabPaths: Record<string, string> = {
-        inbox: '/',
-        'how-it-works': '/how-it-works',
-        audit: '/audit',
-        api: '/api',
-        faq: '/faq',
-        admin: '/admin',
-        terms: '/terms',
-        privacy: '/privacy',
-        about: '/about',
-        contact: '/contact',
-        disclaimer: '/disclaimer',
-        cookies: '/cookies',
-        '404': '/404',
-      };
-      const targetPath = tabPaths[tab] || '/';
-      if (window.location.pathname !== targetPath) {
-        window.history.pushState(null, '', targetPath);
-      }
+    setActiveGuideSlug(null);
+    const targetPath = tabToCanonicalPathMap[tab] || '/';
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState(null, '', targetPath);
     }
   }, []);
 
@@ -195,119 +183,38 @@ export default function App() {
       return;
     }
 
+    const staticPages = getAllStaticPages();
+
     // 2. Individual guide article
     if (activeTab === 'blog' && activeGuideSlug) {
-      const article = blogArticles.find((a) => a.slug === activeGuideSlug);
-      if (article) {
+      const articlePage = staticPages[`/guides/${activeGuideSlug}`];
+      if (articlePage && articlePage.article) {
         updateDocumentSeo({
-          title: `${article.title} — TempInbox Guide`,
-          description: article.description,
-          canonicalUrl: `https://tempinbox.solutions/guides/${article.slug}`,
-          robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+          title: articlePage.title,
+          description: articlePage.description,
+          canonicalUrl: articlePage.canonicalUrl,
+          robots: articlePage.robots,
           ogType: 'article',
-          ogImage: article.imageUrl,
-          articleData: article,
+          ogImage: articlePage.ogImage,
+          articleData: articlePage.article,
         });
         return;
       }
     }
 
-    // 3. Editorial and utility pages SEO mapping
-    const seoMap: Record<string, { title: string; description: string; canonical: string; robots: string }> = {
-      inbox: {
-        title: 'TempInbox - Temporary Email Service',
-        description: 'Fast, privacy-focused disposable temporary email generator with real-time inbox, multi-domain choices, and educational spam prevention guides.',
-        canonical: 'https://tempinbox.solutions/',
-        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
-      },
-      blog: {
-        title: 'Email Privacy & Temporary Email Guides — TempInbox',
-        description: 'In-depth educational guides explaining email tracking pixels, disposable aliases, spam reduction, and online privacy architectures.',
-        canonical: 'https://tempinbox.solutions/guides',
-        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
-      },
-      'how-it-works': {
-        title: 'How It Works — TempInbox Disposable Inboxes in 3 Steps',
-        description: 'Learn how TempInbox generates disposable addresses, routes inbound SMTP mail in RAM, and protects your primary mailbox from spam.',
-        canonical: 'https://tempinbox.solutions/how-it-works',
-        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
-      },
-      about: {
-        title: 'About TempInbox — Ephemeral Email Architecture & Mission',
-        description: 'Learn about TempInbox\'s mission to reduce unwanted email, our volatile in-memory architecture, and our focus on email privacy.',
-        canonical: 'https://tempinbox.solutions/about',
-        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
-      },
-      faq: {
-        title: 'Frequently Asked Questions — TempInbox Disposable Email',
-        description: 'Find answers to common questions about TempInbox address lifespans, MIME attachments, security boundaries, and privacy protections.',
-        canonical: 'https://tempinbox.solutions/faq',
-        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
-      },
-      terms: {
-        title: 'Terms of Service & Acceptable Use Policy — TempInbox',
-        description: 'Terms of service, acceptable use guidelines, prohibited activities, and service boundaries for TempInbox temporary email.',
-        canonical: 'https://tempinbox.solutions/terms',
-        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
-      },
-      privacy: {
-        title: 'Privacy Policy & Ephemeral Data Processing — TempInbox',
-        description: 'Factual privacy disclosures covering TempInbox volatile RAM architecture, infrastructure logging, and third-party advertising processing.',
-        canonical: 'https://tempinbox.solutions/privacy',
-        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
-      },
-      cookies: {
-        title: 'Privacy & Cookie Policy — TempInbox',
-        description: 'Information regarding cookie usage, advertising preferences, Consent Mode v2 default denials, and planned certified CMP integration.',
-        canonical: 'https://tempinbox.solutions/cookies',
-        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
-      },
-      contact: {
-        title: 'Contact Support & Abuse Reporting — TempInbox',
-        description: 'Get in touch with the TempInbox team for technical inquiries, vulnerability disclosures, or reporting service abuse.',
-        canonical: 'https://tempinbox.solutions/contact',
-        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
-      },
-      api: {
-        title: 'Developer API Documentation — TempInbox REST Endpoints',
-        description: 'Interactive documentation for TempInbox developer APIs, mailbox generation endpoints, and ephemeral email testing.',
-        canonical: 'https://tempinbox.solutions/api',
-        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
-      },
-      disclaimer: {
-        title: 'Legal Disclaimer & Technical Boundaries — TempInbox',
-        description: 'Important disclosures regarding the disposable, non-permanent nature of temporary email inboxes and absence of encryption.',
-        canonical: 'https://tempinbox.solutions/disclaimer',
-        robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
-      },
-      audit: {
-        title: 'Privacy Audit & Exposure Calculator — TempInbox',
-        description: 'Interactive educational assessment tool calculating your email exposure risk and tracking footprint across the web.',
-        canonical: 'https://tempinbox.solutions/audit',
-        robots: 'noindex, follow',
-      },
-      admin: {
-        title: 'System Health & Admin Telemetry — TempInbox',
-        description: 'Internal system telemetry and mail node status dashboard.',
-        canonical: 'https://tempinbox.solutions/admin',
-        robots: 'noindex, nofollow',
-      },
-      '404': {
-        title: 'Page Not Found (404) — TempInbox',
-        description: 'The requested page could not be found on TempInbox. Return to our free temporary email tool or browse email privacy guides.',
-        canonical: 'https://tempinbox.solutions/404',
-        robots: 'noindex, follow',
-      },
-    };
-
-    const currentSeo = seoMap[activeTab] || seoMap['404'];
-    updateDocumentSeo({
-      title: currentSeo.title,
-      description: currentSeo.description,
-      canonicalUrl: currentSeo.canonical,
-      robots: currentSeo.robots,
-      ogType: 'website',
-    });
+    // 3. Centralized static page SEO mapping directly from staticRoutes.ts
+    const currentPath = tabToCanonicalPathMap[activeTab] || '/404';
+    const page = staticPages[currentPath] || staticPages['/404'];
+    if (page) {
+      updateDocumentSeo({
+        title: page.title,
+        description: page.description,
+        canonicalUrl: page.canonicalUrl,
+        robots: page.robots,
+        ogType: page.ogType,
+        ogImage: page.ogImage,
+      });
+    }
   }, [activeTab, activeGuideSlug, selectedMessage]);
 
   // Initial Mailbox Generation on Load

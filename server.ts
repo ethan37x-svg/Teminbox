@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
-import { injectSeoIntoHtml } from './src/seo/staticRoutes';
+import { injectSeoIntoHtml, isKnownRoute } from './src/seo/staticRoutes';
 
 // Ensure HMR is disabled in AI Studio dev server to avoid WebSocket connection errors
 process.env.DISABLE_HMR = 'true';
@@ -18,6 +18,65 @@ const PORT = process.env.NODE_ENV === 'production' && process.env.PORT
   : 3000;
 
 app.use(express.json());
+
+// ==============================================================================
+// Canonical URL, Host & Trailing Slash Normalization Middleware
+// Enforces single canonical domain (https://tempinbox.solutions) & consistent URLs
+// ==============================================================================
+app.use((req, res, next) => {
+  const host = (req.headers.host || '').toLowerCase();
+  const rawUrl = req.originalUrl || req.url;
+
+  // 1. Force Non-WWW (redirect www.tempinbox.solutions -> tempinbox.solutions)
+  if (host.startsWith('www.')) {
+    const nonWwwHost = host.replace(/^www\./, '');
+    return res.redirect(301, `https://${nonWwwHost}${rawUrl}`);
+  }
+
+  // 2. Force HTTPS in production (behind reverse proxy / Cloudflare / Hostinger)
+  if (
+    process.env.NODE_ENV === 'production' &&
+    req.headers['x-forwarded-proto'] &&
+    req.headers['x-forwarded-proto'] === 'http' &&
+    host.includes('tempinbox.solutions')
+  ) {
+    return res.redirect(301, `https://tempinbox.solutions${rawUrl}`);
+  }
+
+  // 3. Trailing Slash Normalization: 301 redirect /about/ -> /about (root '/' preserved)
+  if (
+    req.path.length > 1 &&
+    req.path.endsWith('/') &&
+    !req.path.startsWith('/@') &&
+    !req.path.startsWith('/api/')
+  ) {
+    const cleanPath = req.path.replace(/\/+$/, '');
+    const queryString = rawUrl.includes('?') ? '?' + rawUrl.split('?')[1] : '';
+    const redirectUrl = host.includes('tempinbox.solutions')
+      ? `https://tempinbox.solutions${cleanPath}${queryString}`
+      : `${cleanPath}${queryString}`;
+    return res.redirect(301, redirectUrl);
+  }
+
+  // 4. Legacy /blog migration: 301 redirect /blog -> /guides, /blog/* -> /guides/*
+  if (req.path === '/blog') {
+    const queryString = rawUrl.includes('?') ? '?' + rawUrl.split('?')[1] : '';
+    const redirectUrl = host.includes('tempinbox.solutions')
+      ? `https://tempinbox.solutions/guides${queryString}`
+      : `/guides${queryString}`;
+    return res.redirect(301, redirectUrl);
+  }
+  if (req.path.startsWith('/blog/')) {
+    const slug = req.path.replace(/^\/blog\//, '').replace(/\/+$/, '');
+    const queryString = rawUrl.includes('?') ? '?' + rawUrl.split('?')[1] : '';
+    const redirectUrl = host.includes('tempinbox.solutions')
+      ? `https://tempinbox.solutions/guides/${slug}${queryString}`
+      : `/guides/${slug}${queryString}`;
+    return res.redirect(301, redirectUrl);
+  }
+
+  next();
+});
 
 // In-memory store for active mailboxes and messages
 interface StoredMailbox {
@@ -192,7 +251,7 @@ app.get('/blog/:slug', (req, res) => {
 });
 
 // Privacy Safeguard: Prevent search engines from indexing dynamic API or private mailbox responses
-app.use('/api', (req, res, next) => {
+app.use('/api/v1', (req, res, next) => {
   res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
   next();
 });
@@ -552,6 +611,28 @@ Respond with JSON format only:
 
 // Vite Middleware & Production Static Server
 async function startServer() {
+  // Dedicated handlers for root SEO & verification files ensuring exact MIME types
+  app.get('/robots.txt', (req, res) => {
+    const distFile = path.join(process.cwd(), 'dist', 'robots.txt');
+    const pubFile = path.join(process.cwd(), 'public', 'robots.txt');
+    const target = fs.existsSync(distFile) ? distFile : pubFile;
+    res.type('text/plain; charset=utf-8').sendFile(target);
+  });
+
+  app.get('/sitemap.xml', (req, res) => {
+    const distFile = path.join(process.cwd(), 'dist', 'sitemap.xml');
+    const pubFile = path.join(process.cwd(), 'public', 'sitemap.xml');
+    const target = fs.existsSync(distFile) ? distFile : pubFile;
+    res.type('application/xml; charset=utf-8').sendFile(target);
+  });
+
+  app.get('/ads.txt', (req, res) => {
+    const distFile = path.join(process.cwd(), 'dist', 'ads.txt');
+    const pubFile = path.join(process.cwd(), 'public', 'ads.txt');
+    const target = fs.existsSync(distFile) ? distFile : pubFile;
+    res.type('text/plain; charset=utf-8').sendFile(target);
+  });
+
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true, hmr: false },
@@ -562,7 +643,7 @@ async function startServer() {
     app.get('*', async (req, res, next) => {
       // Pass asset and API requests through to Vite / static middlewares
       if (
-        req.path.startsWith('/api') ||
+        req.path.startsWith('/api/') ||
         req.path.includes('.') ||
         req.path.startsWith('/@') ||
         req.path.startsWith('/src/') ||
@@ -574,9 +655,11 @@ async function startServer() {
       try {
         const templatePath = path.join(process.cwd(), 'index.html');
         const rawTemplate = fs.readFileSync(templatePath, 'utf-8');
-        const seoHtml = injectSeoIntoHtml(rawTemplate, req.path);
+        const isKnown = isKnownRoute(req.path);
+        const is404 = !isKnown || req.path === '/404';
+        const targetPath = is404 ? '/404' : req.path;
+        const seoHtml = injectSeoIntoHtml(rawTemplate, targetPath);
         const transformedHtml = await vite.transformIndexHtml(req.originalUrl, seoHtml);
-        const is404 = req.path === '/404';
         return res
           .status(is404 ? 404 : 200)
           .set({ 'Content-Type': 'text/html; charset=utf-8' })
@@ -597,38 +680,49 @@ async function startServer() {
 
     // Route handler for HTML requests in production
     app.get('*', (req, res, next) => {
-      if (req.path.startsWith('/api')) {
+      if (req.path.startsWith('/api/')) {
         return next();
       }
 
+      if (path.extname(req.path)) {
+        return res.status(404).send('Not Found');
+      }
+
       const cleanPath = req.path.split('?')[0].replace(/^\/+/, '').replace(/\/+$/, '');
+      const p404 = path.join(distPath, '404.html');
 
-      // 1. Check direct prerendered directory index (e.g. dist/about/index.html)
-      const directIndexPath = path.join(distPath, cleanPath, 'index.html');
-      if (cleanPath && fs.existsSync(directIndexPath)) {
-        return res.sendFile(directIndexPath);
+      // Explicit /404 request returns HTTP 404
+      if (cleanPath === '404') {
+        if (fs.existsSync(p404)) {
+          return res.status(404).sendFile(p404);
+        }
+        return res.status(404).send('Page Not Found');
       }
 
-      // 2. Check prerendered file (e.g. dist/404.html)
-      const directHtmlPath = path.join(distPath, `${cleanPath}.html`);
-      if (cleanPath && fs.existsSync(directHtmlPath)) {
-        return res.sendFile(directHtmlPath);
-      }
-
-      // 3. Homepage (dist/index.html)
+      // 1. Homepage (dist/index.html) -> HTTP 200
       const baseIndexPath = path.join(distPath, 'index.html');
       if (!cleanPath || cleanPath === '') {
-        return res.sendFile(baseIndexPath);
+        return res.status(200).sendFile(baseIndexPath);
       }
 
-      // 4. Dynamic fallback: inject SEO into base index.html
-      if (fs.existsSync(baseIndexPath)) {
-        const rawIndex = fs.readFileSync(baseIndexPath, 'utf-8');
-        const seoHtml = injectSeoIntoHtml(rawIndex, req.path);
-        return res.status(200).set({ 'Content-Type': 'text/html; charset=utf-8' }).send(seoHtml);
+      // 2. Check direct clean HTML file (e.g. dist/about.html) -> HTTP 200
+      const directHtmlPath = path.join(distPath, `${cleanPath}.html`);
+      if (fs.existsSync(directHtmlPath)) {
+        return res.status(200).sendFile(directHtmlPath);
       }
 
-      res.status(404).send('Not Found');
+      // 3. Check direct prerendered directory index (e.g. dist/about/index.html) -> HTTP 200
+      const directIndexPath = path.join(distPath, cleanPath, 'index.html');
+      if (fs.existsSync(directIndexPath)) {
+        return res.status(200).sendFile(directIndexPath);
+      }
+
+      // 4. Unknown route: return HTTP 404 with pre-rendered 404.html (prevents Soft 404)
+      if (fs.existsSync(p404)) {
+        return res.status(404).sendFile(p404);
+      }
+
+      res.status(404).send('Page Not Found');
     });
   }
 

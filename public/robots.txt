@@ -2,15 +2,14 @@ User-agent: *
 Allow: /
 Allow: /guides
 Allow: /guides/*
-Allow: /blog
-Allow: /blog/*
-Allow: /about
 Allow: /how-it-works
+Allow: /about
 Allow: /faq
 Allow: /terms
 Allow: /privacy
 Allow: /cookies
 Allow: /contact
+Allow: /disclaimer
 Allow: /api
 
 # Protect User Privacy: Strict Disallow for Ephemeral Inboxes & Private Message Streams

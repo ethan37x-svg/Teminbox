@@ -1,4 +1,5 @@
 import { BlogArticle } from '../types';
+import { parseArticleDateToIso } from '../seo/staticRoutes';
 
 export interface SeoConfig {
   title: string;
@@ -93,11 +94,17 @@ function updateStructuredData(config: SeoConfig): void {
           'description': article.description,
           'image': article.imageUrl || DEFAULT_IMAGE,
           'mainEntityOfPage': config.canonicalUrl,
+          'author': {
+            '@type': 'Person',
+            'name': article.author,
+          },
           'publisher': {
             '@type': 'Organization',
             'name': 'TempInbox',
             'url': `${BASE_URL}/`,
           },
+          'datePublished': parseArticleDateToIso(article.date),
+          'dateModified': parseArticleDateToIso(article.date),
         },
         // BreadcrumbList Schema (mirrors visible breadcrumb navigation on page)
         {

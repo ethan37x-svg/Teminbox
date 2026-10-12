@@ -1,0 +1,82 @@
+# ==============================================================================
+# TempInbox (https://tempinbox.solutions) Apache / LiteSpeed Configuration
+# Canonical Domain, Trailing Slash Normalization & Clean URL Rewriting
+# ==============================================================================
+
+Options -Indexes
+Options +FollowSymLinks
+
+<IfModule mod_dir.c>
+  DirectorySlash Off
+</IfModule>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # ----------------------------------------------------------------------------
+  # 1. Canonical Protocol: Force HTTPS
+  # ----------------------------------------------------------------------------
+  RewriteCond %{HTTPS} off
+  RewriteRule ^(.*)$ https://tempinbox.solutions/$1 [R=301,L]
+
+  # ----------------------------------------------------------------------------
+  # 2. Canonical Hostname: Force Non-WWW (tempinbox.solutions)
+  # ----------------------------------------------------------------------------
+  RewriteCond %{HTTP_HOST} ^www\.tempinbox\.solutions$ [NC]
+  RewriteRule ^(.*)$ https://tempinbox.solutions/$1 [R=301,L]
+
+  # ----------------------------------------------------------------------------
+  # 3. Trailing Slash Normalization: Remove trailing slashes from URLs
+  # Resolves GSC "Crawled - currently not indexed" duplicate slash variations
+  # (Root "/" is preserved by Apache automatically)
+  # ----------------------------------------------------------------------------
+  RewriteCond %{REQUEST_METHOD} =GET
+  RewriteCond %{REQUEST_URI} ^/(.+)/+$
+  RewriteRule ^(.+)/+$ https://tempinbox.solutions/$1 [R=301,L]
+
+  # ----------------------------------------------------------------------------
+  # 4. Legacy URL Migration: Redirect /blog and /blog/* to /guides
+  # Prevents duplicate indexation and consolidates search equity
+  # ----------------------------------------------------------------------------
+  RewriteRule ^blog/?$ https://tempinbox.solutions/guides [R=301,L]
+  RewriteRule ^blog/(.*)$ https://tempinbox.solutions/guides/$1 [R=301,L]
+
+  # ----------------------------------------------------------------------------
+  # 5. Clean URLs: Serve Pre-rendered Static HTML Files
+  # Priority 1: Check direct .html file (e.g., /about -> /about.html)
+  # Priority 2: Check directory index.html (e.g., /about -> /about/index.html)
+  # ----------------------------------------------------------------------------
+  RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+  RewriteRule ^(.+?)/?$ $1.html [L]
+
+  RewriteCond %{DOCUMENT_ROOT}/$1/index.html -f
+  RewriteRule ^(.+?)/?$ $1/index.html [L]
+
+  # ----------------------------------------------------------------------------
+  # 6. Pass-through existing static files and directories
+  # ----------------------------------------------------------------------------
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # ----------------------------------------------------------------------------
+  # 7. Non-existent routes: Return HTTP 404 Status with 404.html
+  # Prevents Soft 404 errors in Google Search Console
+  # ----------------------------------------------------------------------------
+  RewriteRule ^ - [R=404,L]
+</IfModule>
+
+ErrorDocument 404 /404.html
+
+# Security Headers & MIME Types
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+<IfModule mod_mime.c>
+  AddType text/plain .txt
+  AddType application/xml .xml
+</IfModule>

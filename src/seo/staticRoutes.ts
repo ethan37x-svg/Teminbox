@@ -19,6 +19,17 @@ const BASE_URL = 'https://tempinbox.solutions';
 const DEFAULT_IMAGE = 'https://tempinbox.solutions/assets/og-preview.png';
 
 /**
+ * Parses article human-readable date string into ISO-8601 UTC timestamp for Schema.org
+ */
+export function parseArticleDateToIso(dateStr: string): string {
+  const timestamp = Date.parse(dateStr);
+  if (!isNaN(timestamp)) {
+    return new Date(timestamp).toISOString();
+  }
+  return '2026-10-04T00:00:00.000Z';
+}
+
+/**
  * Basic markdown-to-html helper for pre-rendering article content into semantic HTML
  */
 function markdownToHtml(content: string): string {
@@ -329,8 +340,8 @@ export function getAllStaticPages(): Record<string, StaticPageData> {
           'name': 'TempInbox',
           'url': `${BASE_URL}/`,
         },
-        'datePublished': '2026-10-04T00:00:00Z',
-        'dateModified': '2026-10-06T00:00:00Z',
+        'datePublished': parseArticleDateToIso(article.date),
+        'dateModified': parseArticleDateToIso(article.date),
       },
       htmlContent: `
         ${renderHeaderShell()}
@@ -750,7 +761,124 @@ export function getAllStaticPages(): Record<string, StaticPageData> {
     `,
   };
 
-  // 12. 404 Page (/404)
+  // 12. Developer API Documentation (/api)
+  pages['/api'] = {
+    path: '/api',
+    title: 'Developer API Documentation — TempInbox REST Endpoints',
+    description: 'Interactive documentation for TempInbox developer APIs, mailbox generation endpoints, and ephemeral email testing.',
+    canonicalUrl: `${BASE_URL}/api`,
+    robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+    ogType: 'website',
+    ogImage: DEFAULT_IMAGE,
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'WebAPI',
+      'name': 'TempInbox Disposable Email REST API',
+      'description': 'REST API for programmatic generation of temporary disposable mailboxes, message retrieval, and webhook automation for software QA and spam prevention.',
+      'url': `${BASE_URL}/api`,
+      'documentation': `${BASE_URL}/api`,
+    },
+    htmlContent: `
+      ${renderHeaderShell()}
+      <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <header class="mb-10 text-center sm:text-left border-b border-slate-200 dark:border-slate-800 pb-8">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 text-xs font-bold mb-3">
+            <span>Developer Reference</span>
+          </div>
+          <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3">
+            Developer API Documentation
+          </h1>
+          <p class="text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
+            Integrate disposable email generation and ephemeral inbox verification directly into your CI/CD pipelines, automated testing suites, and registration workflows.
+          </p>
+        </header>
+
+        <section class="space-y-8 text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
+          <div class="p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white mb-2">POST /api/v1/generate</h2>
+            <p class="mb-3">Generates a fresh temporary email address with custom retention expiration in volatile RAM.</p>
+            <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl font-mono text-xs overflow-x-auto"><code>curl -X POST "https://tempinbox.solutions/api/v1/generate" \\
+  -H "Content-Type: application/json" \\
+  -d '{"domain": "mailhub.cc", "duration": "24h"}'</code></pre>
+          </div>
+
+          <div class="p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white mb-2">GET /api/v1/inbox?address=:email</h2>
+            <p class="mb-3">Retrieves incoming messages and verification codes received by the active ephemeral mailbox.</p>
+            <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl font-mono text-xs overflow-x-auto"><code>curl -X GET "https://tempinbox.solutions/api/v1/inbox?address=test@mailhub.cc"</code></pre>
+          </div>
+
+          <div class="p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white mb-2">GET /api/v1/domains</h2>
+            <p class="mb-3">Returns currently active inbound MX domains available for mailbox assignment.</p>
+            <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl font-mono text-xs overflow-x-auto"><code>curl -X GET "https://tempinbox.solutions/api/v1/domains"</code></pre>
+          </div>
+        </section>
+      </main>
+      ${renderFooterShell()}
+    `,
+  };
+
+  // 13. Audit Exposure Calculator (/audit)
+  pages['/audit'] = {
+    path: '/audit',
+    title: 'Privacy Audit & Exposure Calculator — TempInbox',
+    description: 'Interactive educational assessment tool calculating your email exposure risk and tracking footprint across the web.',
+    canonicalUrl: `${BASE_URL}/audit`,
+    robots: 'noindex, follow',
+    ogType: 'website',
+    ogImage: DEFAULT_IMAGE,
+    htmlContent: `
+      ${renderHeaderShell()}
+      <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <header class="mb-10 text-center sm:text-left border-b border-slate-200 dark:border-slate-800 pb-8">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 text-xs font-bold mb-3">
+            <span>Security Assessment</span>
+          </div>
+          <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3">
+            Privacy Audit & Exposure Calculator
+          </h1>
+          <p class="text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
+            Evaluate your digital privacy posture and calculate how temporary email shielding reduces your online footprint.
+          </p>
+        </header>
+        <section class="p-8 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 text-center">
+          <p class="text-slate-700 dark:text-slate-300 mb-4 font-medium">Interactive audit assessment initializing...</p>
+          <a href="/" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-semibold hover:bg-blue-700">Return to Mailbox</a>
+        </section>
+      </main>
+      ${renderFooterShell()}
+    `,
+  };
+
+  // 14. Admin Telemetry (/admin)
+  pages['/admin'] = {
+    path: '/admin',
+    title: 'System Health & Admin Telemetry — TempInbox',
+    description: 'Internal system telemetry and mail node status dashboard.',
+    canonicalUrl: `${BASE_URL}/admin`,
+    robots: 'noindex, nofollow',
+    ogType: 'website',
+    ogImage: DEFAULT_IMAGE,
+    htmlContent: `
+      ${renderHeaderShell()}
+      <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <header class="mb-10 text-center sm:text-left border-b border-slate-200 dark:border-slate-800 pb-8">
+          <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3">
+            Admin Console & Telemetry
+          </h1>
+          <p class="text-slate-600 dark:text-slate-300 text-sm">Protected administrative diagnostic console.</p>
+        </header>
+        <section class="p-8 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 text-center">
+          <p class="text-slate-700 dark:text-slate-300 mb-4 font-medium">Administrative authentication required.</p>
+          <a href="/" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-semibold hover:bg-blue-700">Return to Home</a>
+        </section>
+      </main>
+      ${renderFooterShell()}
+    `,
+  };
+
+  // 15. 404 Page (/404)
   pages['/404'] = {
     path: '/404',
     title: 'Page Not Found (404) — TempInbox',
@@ -777,6 +905,28 @@ export function getAllStaticPages(): Record<string, StaticPageData> {
   };
 
   return pages;
+}
+
+/**
+ * Checks if a requested path corresponds to a known route in the application
+ */
+export function isKnownRoute(reqPath: string): boolean {
+  let cleanPath = reqPath.split('?')[0].split('#')[0].replace(/\/+$/, '');
+  if (!cleanPath) cleanPath = '/';
+  const allPages = getAllStaticPages();
+  return Boolean(allPages[cleanPath]);
+}
+
+/**
+ * Checks if a requested path is a known public, indexable route (excludes 404 and noindex utility routes)
+ */
+export function isKnownPublicRoute(reqPath: string): boolean {
+  let cleanPath = reqPath.split('?')[0].split('#')[0].replace(/\/+$/, '');
+  if (!cleanPath) cleanPath = '/';
+  if (cleanPath === '/404') return false;
+  const allPages = getAllStaticPages();
+  const page = allPages[cleanPath];
+  return Boolean(page && !page.robots.includes('noindex'));
 }
 
 /**

@@ -66,21 +66,17 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- Editorial: About & Technical Architecture -->
-  <url>
-    <loc>https://tempinbox.solutions/about</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <!-- Editorial: How It Works -->
+  <!-- Product & Technical Architecture -->
   <url>
     <loc>https://tempinbox.solutions/how-it-works</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
-
-  <!-- Editorial: Frequently Asked Questions -->
+  <url>
+    <loc>https://tempinbox.solutions/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
   <url>
     <loc>https://tempinbox.solutions/faq</loc>
     <changefreq>monthly</changefreq>
@@ -107,5 +103,17 @@
     <loc>https://tempinbox.solutions/contact</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://tempinbox.solutions/disclaimer</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- Developer API Documentation -->
+  <url>
+    <loc>https://tempinbox.solutions/api</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
 </urlset>

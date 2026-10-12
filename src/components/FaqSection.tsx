@@ -142,7 +142,29 @@ export const FaqSection: React.FC = () => {
       </div>
 
       {/* Footer Support Notice */}
-      <div className="mt-8 text-center text-xs text-slate-500 dark:text-slate-400 flex items-center justify-center gap-1.5">
+      <div className="mt-8 p-4 rounded-xl bg-blue-50/60 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600 dark:text-slate-300">
+        <div className="flex items-center gap-2">
+          <BookOpen className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+          <span>Looking for deep-dive tutorials on temporary email protocols?</span>
+        </div>
+        <div className="flex items-center gap-3 shrink-0">
+          <a
+            href="/guides"
+            className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
+          >
+            Explore Technical Guides &rarr;
+          </a>
+          <span className="text-slate-300 dark:text-slate-700">|</span>
+          <a
+            href="/"
+            className="text-xs font-medium text-slate-500 dark:text-slate-400 hover:underline"
+          >
+            Generate Inbox
+          </a>
+        </div>
+      </div>
+
+      <div className="mt-4 text-center text-xs text-slate-500 dark:text-slate-400 flex items-center justify-center gap-1.5">
         <ShieldCheck className="w-4 h-4 text-emerald-500" />
         <span>Need further technical clarification? Contact our engineering team at <a href="mailto:support@tempinbox.solutions" className="text-blue-600 dark:text-blue-400 underline font-bold">support@tempinbox.solutions</a></span>
       </div>

@@ -34,16 +34,35 @@ async function prerender() {
       count++;
     } else {
       // route is e.g. /about, /guides, /guides/what-is-a-temporary-email-address
-      const relativeFolder = route.replace(/^\/+/, '');
-      const targetFolder = path.join(distDir, relativeFolder);
+      const cleanPath = route.replace(/^\/+/, '');
+      
+      // 1. Directory index format: dist/about/index.html
+      const targetFolder = path.join(distDir, cleanPath);
       if (!fs.existsSync(targetFolder)) {
         fs.mkdirSync(targetFolder, { recursive: true });
       }
       const targetFilePath = path.join(targetFolder, 'index.html');
       fs.writeFileSync(targetFilePath, renderedHtml, 'utf-8');
-      console.log(` ✅ Prerendered: ${route} -> dist/${relativeFolder}/index.html`);
+
+      // 2. Direct clean HTML file: dist/about.html (for servers configured without directory trailing slash)
+      const directHtmlPath = path.join(distDir, `${cleanPath}.html`);
+      const parentDir = path.dirname(directHtmlPath);
+      if (!fs.existsSync(parentDir)) {
+        fs.mkdirSync(parentDir, { recursive: true });
+      }
+      fs.writeFileSync(directHtmlPath, renderedHtml, 'utf-8');
+
+      console.log(` ✅ Prerendered: ${route} -> dist/${cleanPath}/index.html & dist/${cleanPath}.html`);
       count++;
     }
+  }
+
+  // Ensure public/.htaccess is synced to dist/.htaccess
+  const publicHtaccess = path.resolve(__dirname, '../public/.htaccess');
+  const distHtaccess = path.join(distDir, '.htaccess');
+  if (fs.existsSync(publicHtaccess)) {
+    fs.copyFileSync(publicHtaccess, distHtaccess);
+    console.log(' ✅ Copied canonical .htaccess to dist/.htaccess');
   }
 
   console.log(`✨ Successfully prerendered ${count} public routes with complete SEO tags and semantic HTML!`);

@@ -168,6 +168,15 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onOpenCmp }) => {
               </li>
               <li>
                 <a
+                  href="/disclaimer"
+                  onClick={(e) => handleLinkClick(e, 'disclaimer')}
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left inline-block"
+                >
+                  Legal Disclaimer
+                </a>
+              </li>
+              <li>
+                <a
                   href="/cookies"
                   onClick={handleCookieClick}
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-sm text-left text-slate-600 dark:text-slate-400 font-medium hover:underline"
